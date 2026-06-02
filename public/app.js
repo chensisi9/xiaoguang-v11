@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -100,6 +100,7 @@ function companionContext() {
     focusNotes,
     latestFeedback: latestFeedback ? `${teacherSubjects[latestFeedback.subject]?.name || "练习"} ${latestFeedback.focus}，下次${latestFeedback.nextAction || "继续练"}` : "",
     baobaoProfile,
+    finalReviewPlan,
     studyMaterials: studyMaterials.map((item) => ({
       subject: item.subject,
       title: item.title,
@@ -108,6 +109,28 @@ function companionContext() {
       units: item.units
     }))
   };
+}
+
+function currentReviewWeek() {
+  const today = new Date(TODAY);
+  const month = today.getMonth() + 1;
+  const day = today.getDate();
+  if (month !== 6) return finalReviewPlan.weeks[0];
+  if (day <= 7) return finalReviewPlan.weeks[0];
+  if (day <= 14) return finalReviewPlan.weeks[1];
+  if (day <= 21) return finalReviewPlan.weeks[2];
+  return finalReviewPlan.weeks[3];
+}
+
+function reviewPlanCard(compact = false) {
+  const week = currentReviewWeek();
+  return `<div class="card reviewCard">
+    <div class="taskTop"><div class="pill">期末复习</div><div class="tiny">${escapeHtml(week.range)}</div></div>
+    <h2>${escapeHtml(week.name)}</h2>
+    <p>${escapeHtml(finalReviewPlan.principle)}</p>
+    <div class="reviewList">${week.focus.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
+    ${compact ? "" : `<div class="note blue">${escapeHtml(week.daily)}</div>`}
+  </div>`;
 }
 
 function renderConversation() {
@@ -200,6 +223,7 @@ const renderers = {
         <button class="primary secondary" id="saveCompanionMoment">让小光记住</button>
         <button class="primary secondary" id="quietBtn">${state.companion?.quietMode ? "退出少说" : "少说陪伴"}</button>
       </div>
+      ${reviewPlanCard(true)}
       <div class="card">
         <h2>今日五项</h2>
         ${state.tasks.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b> · ${state.done?.[`task_${task.id}`] ? "已完成" : "未完成"}<br><span class="tiny">${escapeHtml(task.target)}</span></div>`).join("")}
@@ -208,7 +232,7 @@ const renderers = {
     </div>`;
   },
   daily() {
-    return `<div class="grid2">${state.tasks.map((task) => taskCard(task)).join("")}</div>`;
+    return `${reviewPlanCard()}<div class="card"><h2>今天照这个节奏</h2>${finalReviewPlan.dailyTemplate.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div><div class="grid2">${state.tasks.map((task) => taskCard(task)).join("")}</div>`;
   },
   materials() {
     return `<div class="grid2">

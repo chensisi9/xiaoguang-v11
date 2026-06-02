@@ -14,7 +14,10 @@ function readJson(key, fallback) {
 function normalizeState(raw) {
   if (!raw || raw.date !== TODAY) return createInitialState();
   const existingTasks = Array.isArray(raw.tasks) ? raw.tasks : [];
-  const tasks = defaultTasks.map((task) => ({ ...task, ...(existingTasks.find((item) => item.id === task.id) || {}) }));
+  const tasks = defaultTasks.map((task) => {
+    const existing = existingTasks.find((item) => item.id === task.id) || {};
+    return { ...existing, ...task, icap: existing.icap || task.icap };
+  });
   return {
     ...createInitialState(),
     ...raw,

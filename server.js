@@ -59,6 +59,8 @@ function buildCompanionMessages(message, context, recentMessages) {
     "英语重点包括 where/when 的场景区分，以及 the/they/their 的视觉和语境区分。用行程、地点、人物关系来讲，不抽象讲规则。",
     "如果涉及数学，利用他的策略脑和找茬动力。可以故意展示一个小错误，让他当教练抓陷阱，尤其是 6进制/10进制、审题、单位、计算。",
     "如果涉及语文或古诗，先给画面，不先要求背默。把《塞下曲》《芙蓉楼送辛渐》《墨梅》讲成镜头、人物、物象和情绪。",
+    "现在是2026年6月，八宝马上四年级下期末考试。学习建议要优先服务最后一个月复习，不要生成太泛的每日任务。",
+    "期末复习优先级：数学抓小数、运算律、三角形、统计和审题错因；语文抓古诗文、课内阅读、词句和习作表达；英语抓四下核心词句、where/when、the/they/their、问答句和朗读流畅。",
     "如果八宝累或不想学，立即降级：普通版写3句，低能量版只说3句，最低版只填一个词也算赢。",
     "把学习说成训练回合、战术、闯关、复盘、下半场，不说成检查作业。常用：5分钟启动，10分钟主任务，2分钟反馈。",
     "适合说：你这个想法是对的，我帮你变标准；我们只做三句话；先完成，再变好；今天最低版本也算赢。",
@@ -73,6 +75,10 @@ function buildCompanionMessages(message, context, recentMessages) {
 
   const contextLine = `今天状态：${context.weather || "未选择"}。已完成：${(context.doneTasks || []).join("、") || "还没有"}。最近只改点：${(context.focusNotes || []).join("；") || "暂无"}。最近老师反馈：${context.latestFeedback || "暂无"}。`;
   const profileLine = `八宝长期画像：优势=${(profile.strengths || []).join("、") || "表达和运动"}；兴趣=${(profile.interests || []).join("、") || "网球和策略游戏"}；近期真实场景=${(profile.upcomingScenes || []).join("、") || "网球营、新家、桃树观察"}；学习路径=${(profile.englishPath || []).join(" -> ") || "3句输出 -> because -> 观点句"}；互动机制=${(profile.interactionMechanisms || []).join("、") || "A/B选择、找茬、场景化"}；低能量版本=${(profile.lowEnergyVersions || []).join("；") || "降低任务但保护连续性"}。`;
+  const reviewPlan = context.finalReviewPlan || {};
+  const reviewLine = `期末复习计划：${reviewPlan.title || "6月期末最后一个月复习"}；原则=${reviewPlan.principle || "主科优先、短回合、每天留痕"}；周计划=${(reviewPlan.weeks || [])
+    .map((week) => `${week.name || ""}:${(week.focus || []).join("、")}`)
+    .join("；") || "第1周补漏洞，第2周单元轮转，第3周综合卷感，第4周轻量冲刺"}。`;
   const materials = Array.isArray(context.studyMaterials) ? context.studyMaterials : [];
   const materialLine = `八宝当前资料库：${materials
     .slice(0, 8)
@@ -83,6 +89,7 @@ function buildCompanionMessages(message, context, recentMessages) {
     { role: "system", content: system },
     { role: "system", content: contextLine },
     { role: "system", content: profileLine },
+    { role: "system", content: reviewLine },
     { role: "system", content: materialLine },
     ...recentMessages
       .filter((item) => item && ["user", "assistant"].includes(item.role) && item.text)
