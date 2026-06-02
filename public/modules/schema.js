@@ -4,6 +4,7 @@ export const pagesDef = [
   { id: "home", icon: "☀️", name: "今日", title: "今天先做重要的几件事", hint: "先看状态，再完成数学、英语、语文、口琴和网球。每项只改一个小点。", kind: "home" },
   { id: "companion", icon: "✨", name: "陪伴", title: "和小光说说话", hint: "可以直接跟小光说今天的烦、卡住、开心或不想学。小光会先陪你，再帮你把下一步变小。", kind: "companion" },
   { id: "daily", icon: "✅", name: "每日任务", title: "五项每日刻意练习", hint: "不用做很多。每个项目只记录：今天练什么、只改哪一点、完成到哪一步。", kind: "daily" },
+  { id: "materials", icon: "📚", name: "资料", title: "八宝正在学的资料库", hint: "小光不背课本正文，但会把这些资料当成课程背景，生成更贴近八宝当下学习的训练回合。", kind: "materials" },
   { id: "feedback", icon: "🏅", name: "老师反馈", title: "老师反馈库", hint: "把老师的话变成下一次能练的动作。", kind: "feedback" },
   { id: "weekly", icon: "📈", name: "周复盘", title: "本周复盘", hint: "每周只看趋势：哪项更稳定，哪项卡住，下周只保留一个小动作。", kind: "weekly" },
   { id: "history", icon: "🗂", name: "历史", title: "历史记录", hint: "保存今天，之后可以回看八宝每天练过什么。", kind: "history" },
@@ -93,6 +94,49 @@ export const teacherSubjects = {
   }
 };
 
+export const studyMaterials = [
+  {
+    id: "pep-math-4b",
+    subject: "数学",
+    title: "人教版四年级下册数学",
+    fileName: "【人教版】四年级下册数学电子课本.pdf",
+    pages: 123,
+    role: "当前校内数学主线",
+    coachingUse: "用策略脑和找茬机制处理审题陷阱、运算律、小数、三角形和统计。",
+    units: ["四则运算", "观察物体（二）", "运算律", "小数的意义和性质", "三角形", "小数加减法", "图形运动（二）", "平均数与复式条形统计图"]
+  },
+  {
+    id: "pep-chinese-4b",
+    subject: "语文",
+    title: "人教版四年级下册语文",
+    fileName: "【人教版】四年级下册语文电子课本.pdf",
+    pages: 151,
+    role: "当前校内语文主线",
+    coachingUse: "古诗先画面化，阅读先表达观点，写作先留一句痕迹。",
+    units: ["短诗三首", "绿", "白桦", "猫", "母鸡", "白鹅", "海上日出", "记金华的双龙洞", "囊萤夜读", "铁杵成针"]
+  },
+  {
+    id: "jing-tong-english-4b",
+    subject: "英语",
+    title: "精通四下英语",
+    fileName: "精通四下英语电子课本 彩色正式版.pdf",
+    pages: 98,
+    role: "当前校内英语主线",
+    coachingUse: "做低门槛输出、场景对话和 where/when、the/they/their 的破冰训练。",
+    units: ["校内四下英语", "三句表达", "场景问答", "基础词句复现"]
+  },
+  ...["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B", "6A", "6B"].map((level) => ({
+    id: `longman-${level.toLowerCase()}`,
+    subject: "英语",
+    title: `朗文课本 ${level}`,
+    fileName: `朗文课本${level}.pdf`,
+    pages: { "1A": 58, "1B": 58, "2A": 54, "2B": 54, "3A": 55, "3B": 57, "4A": 80, "4B": 75, "5A": 81, "5B": 79, "6A": 78, "6B": 77 }[level],
+    role: "英语分级补充材料",
+    coachingUse: "作为长期螺旋复习素材，优先服务听说、句型复现和生活化表达。",
+    units: ["分级阅读", "生活场景", "句型复现", "听说输入"]
+  }))
+];
+
 export const dadMessages = [
   "今天不用全满，先把一个动作做准。",
   "我看见你开始了，这已经很重要。",
@@ -127,6 +171,7 @@ export const baobaoProfile = {
     math: ["逻辑强", "6进制与10进制", "审题陷阱", "怕连环追问"],
     chinese: ["四年级古诗", "塞下曲", "芙蓉楼送辛渐", "墨梅", "白描", "托物言志", "具象画面理解"]
   },
+  studyMaterials,
   resistanceTriggers: ["被检查", "被命令", "被比较", "还没表达完就纠错", "任务太长", "突然提高难度", "连环追问", "考核压力", "父子控制战"],
   coachingIdentities: ["体育+策略教练", "表达翻译官", "训练教练", "成长记录员", "低能量保护者"],
   interactionMechanisms: ["A/B角选择权", "八宝教练找茬", "场景化绑定", "即时正向反馈", "任务闯关"],

@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, humanToneLines, pagesDef, progressKeys, teacherSubjects, TODAY } from "./modules/schema.js";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -99,7 +99,14 @@ function companionContext() {
     doneTasks,
     focusNotes,
     latestFeedback: latestFeedback ? `${teacherSubjects[latestFeedback.subject]?.name || "练习"} ${latestFeedback.focus}，下次${latestFeedback.nextAction || "继续练"}` : "",
-    baobaoProfile
+    baobaoProfile,
+    studyMaterials: studyMaterials.map((item) => ({
+      subject: item.subject,
+      title: item.title,
+      role: item.role,
+      coachingUse: item.coachingUse,
+      units: item.units
+    }))
   };
 }
 
@@ -174,6 +181,13 @@ function field(group, key, placeholder) {
   return `<label>${placeholder}</label><textarea data-group="${group}" data-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>`;
 }
 
+function materialCards(subject = "") {
+  return studyMaterials
+    .filter((item) => !subject || item.subject === subject)
+    .map((item) => `<div class="history"><b>${escapeHtml(item.subject)} · ${escapeHtml(item.title)}</b><br>${escapeHtml(item.role)} · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span><br><span class="tiny">重点：${item.units.map(escapeHtml).join("、")}</span></div>`)
+    .join("");
+}
+
 const renderers = {
   home() {
     return `<div class="grid2">
@@ -195,6 +209,21 @@ const renderers = {
   },
   daily() {
     return `<div class="grid2">${state.tasks.map((task) => taskCard(task)).join("")}</div>`;
+  },
+  materials() {
+    return `<div class="grid2">
+      <div class="card">
+        <h2>校内主线</h2>
+        ${materialCards("数学")}
+        ${materialCards("语文")}
+        ${studyMaterials.filter((item) => item.id === "jing-tong-english-4b").map((item) => `<div class="history"><b>${escapeHtml(item.subject)} · ${escapeHtml(item.title)}</b><br>${escapeHtml(item.role)} · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span></div>`).join("")}
+      </div>
+      <div class="card">
+        <h2>英语补充</h2>
+        <div class="note blue">朗文 1A-6B 作为长期螺旋复习材料，不把课本变成压力；小光优先抽取生活场景、句型和可说出口的 3 句表达。</div>
+        ${studyMaterials.filter((item) => item.title.startsWith("朗文课本")).map((item) => `<div class="history"><b>${escapeHtml(item.title)}</b> · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span></div>`).join("")}
+      </div>
+    </div>`;
   },
   companion() {
     return `<div class="grid2">

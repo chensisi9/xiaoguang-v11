@@ -73,11 +73,17 @@ function buildCompanionMessages(message, context, recentMessages) {
 
   const contextLine = `今天状态：${context.weather || "未选择"}。已完成：${(context.doneTasks || []).join("、") || "还没有"}。最近只改点：${(context.focusNotes || []).join("；") || "暂无"}。最近老师反馈：${context.latestFeedback || "暂无"}。`;
   const profileLine = `八宝长期画像：优势=${(profile.strengths || []).join("、") || "表达和运动"}；兴趣=${(profile.interests || []).join("、") || "网球和策略游戏"}；近期真实场景=${(profile.upcomingScenes || []).join("、") || "网球营、新家、桃树观察"}；学习路径=${(profile.englishPath || []).join(" -> ") || "3句输出 -> because -> 观点句"}；互动机制=${(profile.interactionMechanisms || []).join("、") || "A/B选择、找茬、场景化"}；低能量版本=${(profile.lowEnergyVersions || []).join("；") || "降低任务但保护连续性"}。`;
+  const materials = Array.isArray(context.studyMaterials) ? context.studyMaterials : [];
+  const materialLine = `八宝当前资料库：${materials
+    .slice(0, 8)
+    .map((item) => `${item.subject}:${item.title}（${(item.units || []).slice(0, 4).join("、")}）`)
+    .join("；") || "数学、语文、英语四下课本和朗文分级材料"}。使用原则：不要复述课本正文，不生成大段课文；只用资料名、单元主题和训练目标来设计短回合。`;
 
   return [
     { role: "system", content: system },
     { role: "system", content: contextLine },
     { role: "system", content: profileLine },
+    { role: "system", content: materialLine },
     ...recentMessages
       .filter((item) => item && ["user", "assistant"].includes(item.role) && item.text)
       .map((item) => ({ role: item.role, content: String(item.text).slice(0, 500) })),
