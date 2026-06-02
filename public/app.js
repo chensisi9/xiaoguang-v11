@@ -201,9 +201,10 @@ const renderers = {
         <div class="chatBox" id="chatBox">${renderConversation()}</div>
         <label>直接跟小光说</label>
         <textarea id="companionInput" placeholder="例如：我今天不想做数学，感觉很烦。"></textarea>
+        <div class="status" id="companionStatus">点“开始说话”，说完后小光会自动回答。</div>
         <div class="row">
-          <button class="primary" id="sendCompanion">发送并朗读</button>
-          <button class="secondary" id="voiceCompanion">🎙 语音输入</button>
+          <button class="primary" id="voiceCompanion">🎙 开始说话</button>
+          <button class="secondary" id="sendCompanion">发送文字</button>
         </div>
       </div>
       <div class="card">
@@ -310,7 +311,7 @@ function bindAll() {
     addCompanionMoment(document.getElementById("companionMoment").value, "home");
     renderPages("home");
   });
-  document.getElementById("sendCompanion")?.addEventListener("click", sendCompanionMessage);
+  document.getElementById("sendCompanion")?.addEventListener("click", () => sendCompanionMessage());
   document.getElementById("voiceCompanion")?.addEventListener("click", startCompanionVoiceInput);
   document.getElementById("bedtimeSummaryCompanion")?.addEventListener("click", () => speak(bedtimeSummary()));
   document.getElementById("feedbackSubject")?.addEventListener("change", (event) => {
@@ -352,11 +353,11 @@ function bindAll() {
   });
 }
 
-async function sendCompanionMessage() {
+async function sendCompanionMessage(messageOverride = "") {
   const input = document.getElementById("companionInput");
-  const message = input?.value.trim();
+  const message = String(messageOverride || input?.value || "").trim();
   if (!message) return;
-  input.value = "";
+  if (input) input.value = "";
   addCompanionMessage("user", message);
   renderPages("companion");
   try {
@@ -386,8 +387,9 @@ async function sendCompanionMessage() {
 function startCompanionVoiceInput() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const input = document.getElementById("companionInput");
+  const status = document.getElementById("companionStatus");
   if (!SpeechRecognition || !input) {
-    alert("这个浏览器暂时不支持语音输入，可以先打字跟小光说。");
+    alert("这个浏览器暂时不支持语音识别，可以换 Chrome/Safari，或者先用文字。");
     return;
   }
   if (recognition) recognition.stop();
@@ -395,8 +397,18 @@ function startCompanionVoiceInput() {
   recognition.lang = "zh-CN";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
+  if (status) status.textContent = "小光在听，说完停一下就会自动回答。";
   recognition.onresult = (event) => {
-    input.value = event.results[0][0].transcript;
+    const transcript = event.results[0][0].transcript;
+    input.value = transcript;
+    if (status) status.textContent = `听到了：${transcript}`;
+    sendCompanionMessage(transcript);
+  };
+  recognition.onerror = () => {
+    if (status) status.textContent = "刚才没听清，可以再点一次开始说话。";
+  };
+  recognition.onend = () => {
+    if (status && !input.value) status.textContent = "点“开始说话”，说完后小光会自动回答。";
   };
   recognition.start();
 }
