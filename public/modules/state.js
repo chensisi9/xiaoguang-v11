@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260602-final-review-4b";
 
 export const storeKey = "xiaoguang_v11_state";
 export const historyKey = "xiaoguang_v11_history";

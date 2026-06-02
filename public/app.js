@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260602-final-review-4b";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js";
+} from "./modules/state.js?v=20260602-final-review-4b";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -128,6 +128,7 @@ function reviewPlanCard(compact = false) {
     <div class="taskTop"><div class="pill">期末复习</div><div class="tiny">${escapeHtml(week.range)}</div></div>
     <h2>${escapeHtml(week.name)}</h2>
     <p>${escapeHtml(finalReviewPlan.principle)}</p>
+    <div class="note green">当前复习资料：${finalReviewPlan.sources.map(escapeHtml).join("、")}</div>
     <div class="reviewList">${week.focus.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
     ${compact ? "" : `<div class="note blue">${escapeHtml(week.daily)}</div>`}
   </div>`;
@@ -235,16 +236,16 @@ const renderers = {
     return `${reviewPlanCard()}<div class="card"><h2>今天照这个节奏</h2>${finalReviewPlan.dailyTemplate.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div><div class="grid2">${state.tasks.map((task) => taskCard(task)).join("")}</div>`;
   },
   materials() {
+    const mainMaterials = studyMaterials.filter((item) => ["pep-math-4b", "pep-chinese-4b", "jing-tong-english-4b"].includes(item.id));
     return `<div class="grid2">
       <div class="card">
-        <h2>校内主线</h2>
-        ${materialCards("数学")}
-        ${materialCards("语文")}
-        ${studyMaterials.filter((item) => item.id === "jing-tong-english-4b").map((item) => `<div class="history"><b>${escapeHtml(item.subject)} · ${escapeHtml(item.title)}</b><br>${escapeHtml(item.role)} · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span></div>`).join("")}
+        <h2>期末主线资料</h2>
+        <div class="note green">6月期末复习只按这三套四年级下资料走：人教四下数学、人教四下语文、精通四下英语。</div>
+        ${mainMaterials.map((item) => `<div class="history"><b>${escapeHtml(item.subject)} · ${escapeHtml(item.title)}</b><br>${escapeHtml(item.role)} · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span><br><span class="tiny">复习范围：${item.units.map(escapeHtml).join("、")}</span></div>`).join("")}
       </div>
       <div class="card">
-        <h2>英语补充</h2>
-        <div class="note blue">朗文 1A-6B 作为长期螺旋复习材料，不把课本变成压力；小光优先抽取生活场景、句型和可说出口的 3 句表达。</div>
+        <h2>英语长期补充</h2>
+        <div class="note blue">朗文 1A-6B 只作为长期听说补充，不进入6月期末主计划。期末英语主线以“精通四下英语”为准。</div>
         ${studyMaterials.filter((item) => item.title.startsWith("朗文课本")).map((item) => `<div class="history"><b>${escapeHtml(item.title)}</b> · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span></div>`).join("")}
       </div>
     </div>`;
