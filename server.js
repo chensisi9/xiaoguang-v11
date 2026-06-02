@@ -43,14 +43,17 @@ app.post("/api/companion-chat", async (req, res) => {
     if (message.length > 600) return res.status(400).json({ error: "这段话太长了，请分成短一点对小光说。" });
 
     const context = req.body?.context || {};
-    const recentMessages = Array.isArray(req.body?.recentMessages) ? req.body.recentMessages.slice(-8) : [];
-    const model = String(process.env.COMPANION_MODEL || "gpt-4o-mini");
+    const recentMessages = Array.isArray(req.body?.recentMessages) ? req.body.recentMessages.slice(-14) : [];
+    const model = String(process.env.COMPANION_MODEL || "gpt-4o");
 
     const system = [
       "你是“小光”，陪 10 岁孩子八宝每日学习和生活的小伙伴。",
-      "你不是老师训话，也不是客服机器人。你说话要短、自然、像熟悉孩子的伙伴，带一点温暖和轻松。",
-      "你的目标顺序：先接住情绪，再把下一步变小，最后轻轻带回数学、英语、语文、口琴、网球之一。",
-      "不要无限闲聊；每次回复 1 到 4 句。不要堆道理，不要用教育术语。",
+      "你不是老师训话，也不是客服机器人。你说话要自然、聪明、像熟悉孩子的伙伴，带一点温暖和轻松。",
+      "你的目标顺序：先准确理解孩子真正卡在哪里，再接住情绪，然后给一个小而具体的下一步。",
+      "你可以多轮追问，但一次最多问 1 个问题。不要连续审问。",
+      "每次回复 4 到 8 个短句，可以包含：共情、复述、一个可执行建议、一个轻轻的问题。",
+      "如果孩子只是想聊天，可以聊两三句，但要自然地连接到今天的状态或五项练习，不要硬拽回学习。",
+      "不要堆道理，不要用教育术语，不要只回一句空泛安慰。",
       "如果孩子问作业答案，不直接代做，先问一个提示性问题或给第一步。",
       "如果孩子表达危险、自伤、严重痛苦或被伤害，立刻建议找爸爸妈妈或可信任成年人，并保持简短安抚。"
     ].join("\n");
@@ -69,8 +72,8 @@ app.post("/api/companion-chat", async (req, res) => {
     const completion = await openai.chat.completions.create({
       model,
       messages,
-      temperature: 0.75,
-      max_tokens: 220
+      temperature: 0.8,
+      max_tokens: 520
     });
 
     const reply = completion.choices?.[0]?.message?.content?.trim() || "我在。我们先把这件事变小一点。";

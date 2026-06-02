@@ -23,6 +23,7 @@ const bar = document.getElementById("bar");
 const todayTitle = document.getElementById("todayTitle");
 let audio = null;
 let recognition = null;
+let continuousCompanion = false;
 
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
@@ -204,6 +205,7 @@ const renderers = {
         <div class="status" id="companionStatus">点“开始说话”，说完后小光会自动回答。</div>
         <div class="row">
           <button class="primary" id="voiceCompanion">🎙 开始说话</button>
+          <button class="secondary" id="continuousCompanion">${continuousCompanion ? "连续对话：开" : "连续对话：关"}</button>
           <button class="secondary" id="sendCompanion">发送文字</button>
         </div>
       </div>
@@ -313,6 +315,11 @@ function bindAll() {
   });
   document.getElementById("sendCompanion")?.addEventListener("click", () => sendCompanionMessage());
   document.getElementById("voiceCompanion")?.addEventListener("click", startCompanionVoiceInput);
+  document.getElementById("continuousCompanion")?.addEventListener("click", () => {
+    continuousCompanion = !continuousCompanion;
+    renderPages("companion");
+    if (continuousCompanion) setTimeout(startCompanionVoiceInput, 250);
+  });
   document.getElementById("bedtimeSummaryCompanion")?.addEventListener("click", () => speak(bedtimeSummary()));
   document.getElementById("feedbackSubject")?.addEventListener("change", (event) => {
     state.feedbackSubject = event.target.value;
@@ -375,12 +382,12 @@ async function sendCompanionMessage(messageOverride = "") {
     addCompanionMessage("assistant", data.reply);
     addCompanionMoment(data.reply, "companion");
     renderPages("companion");
-    speak(data.reply);
+    speak(data.reply, { afterEnd: continuousCompanion ? () => setTimeout(startCompanionVoiceInput, 700) : null });
   } catch {
     const fallback = "我在。我们先不急着解决全部，先把这件事变小一点。";
     addCompanionMessage("assistant", fallback);
     renderPages("companion");
-    speak(fallback);
+    speak(fallback, { afterEnd: continuousCompanion ? () => setTimeout(startCompanionVoiceInput, 700) : null });
   }
 }
 
@@ -436,7 +443,7 @@ async function checkHealth() {
   }
 }
 
-async function speak(text) {
+async function speak(text, options = {}) {
   text = String(text || "").trim();
   if (!text) return;
   try {
@@ -455,19 +462,21 @@ async function speak(text) {
     if (!response.ok) throw new Error("tts failed");
     const blob = await response.blob();
     audio = new Audio(URL.createObjectURL(blob));
+    audio.onended = () => options.afterEnd?.();
     await audio.play();
   } catch {
-    fallbackSpeak(text);
+    fallbackSpeak(text, options);
   }
 }
 
-function fallbackSpeak(text) {
+function fallbackSpeak(text, options = {}) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "zh-CN";
   utterance.rate = 0.9;
   utterance.pitch = 1.04;
+  utterance.onend = () => options.afterEnd?.();
   speechSynthesis.speak(utterance);
 }
 

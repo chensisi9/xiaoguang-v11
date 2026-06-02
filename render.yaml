@@ -10,3 +10,5 @@ services:
         value: 20
       - key: OPENAI_API_KEY
         sync: false
+      - key: COMPANION_MODEL
+        value: gpt-4o
