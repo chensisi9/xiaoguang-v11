@@ -7,7 +7,6 @@
 ```bash
 npm install
 cp .env.example .env
-# 打开 .env，填入 OPENAI_API_KEY
 npm start
 ```
 
@@ -18,6 +17,32 @@ http://localhost:3000
 ```
 
 不要直接双击 `public/index.html`，否则高级 TTS 无法连接后端，只能使用浏览器本地语音。
+
+## 不用 OpenAI 信用卡：本机 Ollama
+
+如果没有 OpenAI API 额度，可以用本机模型跑“小光陪伴”：
+
+1. 安装 Ollama：https://ollama.com/download
+2. 下载中文能力较好的本机模型：
+
+```bash
+ollama pull qwen2.5:7b
+```
+
+3. 保持 Ollama 运行，然后启动小光：
+
+```bash
+npm start
+```
+
+`.env` 默认会使用：
+
+```text
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:7b
+```
+
+说明：Ollama 只适合本地电脑使用。Render 公网页无法访问你电脑里的本机模型；公开部署仍需要云端 AI 服务。没有 OpenAI 时，高级 TTS 也会回退到浏览器本地语音。
 
 ## 当前 V11 内核
 
