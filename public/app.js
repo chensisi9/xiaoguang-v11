@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260602-final-review-4b";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260602-resources";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260602-final-review-4b";
+} from "./modules/state.js?v=20260602-resources";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -129,6 +129,7 @@ function reviewPlanCard(compact = false) {
     <h2>${escapeHtml(week.name)}</h2>
     <p>${escapeHtml(finalReviewPlan.principle)}</p>
     <div class="note green">当前复习资料：${finalReviewPlan.sources.map(escapeHtml).join("、")}</div>
+    <div class="note blue">辅助资源：${finalReviewPlan.supportingResources.map(escapeHtml).join("、")}。只做查漏和轻量输入，不抢期末主线。</div>
     <div class="reviewList">${week.focus.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
     ${compact ? "" : `<div class="note blue">${escapeHtml(week.daily)}</div>`}
   </div>`;
@@ -237,6 +238,9 @@ const renderers = {
   },
   materials() {
     const mainMaterials = studyMaterials.filter((item) => ["pep-math-4b", "pep-chinese-4b", "jing-tong-english-4b"].includes(item.id));
+    const mathSupport = studyMaterials.filter((item) => item.id === "khan-math");
+    const englishAbility = studyMaterials.filter((item) => ["raz-reading", "phonics", "harry-potter-original"].includes(item.id));
+    const longmanMaterials = studyMaterials.filter((item) => item.title.startsWith("朗文课本"));
     return `<div class="grid2">
       <div class="card">
         <h2>期末主线资料</h2>
@@ -244,9 +248,19 @@ const renderers = {
         ${mainMaterials.map((item) => `<div class="history"><b>${escapeHtml(item.subject)} · ${escapeHtml(item.title)}</b><br>${escapeHtml(item.role)} · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span><br><span class="tiny">复习范围：${item.units.map(escapeHtml).join("、")}</span></div>`).join("")}
       </div>
       <div class="card">
-        <h2>英语长期补充</h2>
-        <div class="note blue">朗文 1A-6B 只作为长期听说补充，不进入6月期末主计划。期末英语主线以“精通四下英语”为准。</div>
-        ${studyMaterials.filter((item) => item.title.startsWith("朗文课本")).map((item) => `<div class="history"><b>${escapeHtml(item.title)}</b> · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span></div>`).join("")}
+        <h2>数学辅助线</h2>
+        <div class="note blue">可汗数学只用来解释卡点和补洞。6月做题仍然回到人教四下。</div>
+        ${mathSupport.map((item) => `<div class="history"><b>${escapeHtml(item.subject)} · ${escapeHtml(item.title)}</b><br>${escapeHtml(item.role)}<br><span class="tiny">${escapeHtml(item.coachingUse)}</span><br><span class="tiny">可用场景：${item.units.map(escapeHtml).join("、")}</span></div>`).join("")}
+      </div>
+      <div class="card">
+        <h2>英语能力线</h2>
+        <div class="note blue">RAZ、自然拼读、哈利波特原著阅读课用于听读、拼读和兴趣阅读。期末期间每天最多选一个，5-10分钟即可。</div>
+        ${englishAbility.map((item) => `<div class="history"><b>${escapeHtml(item.title)}</b><br>${escapeHtml(item.role)}<br><span class="tiny">${escapeHtml(item.coachingUse)}</span><br><span class="tiny">训练点：${item.units.map(escapeHtml).join("、")}</span></div>`).join("")}
+      </div>
+      <div class="card">
+        <h2>朗文长期补充</h2>
+        <div class="note blue">朗文 1A-6B 只作为长期听说和句型复现补充，不进入6月期末主计划。</div>
+        ${longmanMaterials.map((item) => `<div class="history"><b>${escapeHtml(item.title)}</b> · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span></div>`).join("")}
       </div>
     </div>`;
   },
