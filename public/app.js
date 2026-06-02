@@ -1,6 +1,7 @@
 import { companionLines, companionProfile, dadMessages, humanToneLines, pagesDef, progressKeys, teacherSubjects, TODAY } from "./modules/schema.js";
 import {
   addCompanionMoment,
+  addCompanionMessage,
   addDadNote,
   addTeacherFeedback,
   deleteHistoryItem,
@@ -21,6 +22,7 @@ const progressText = document.getElementById("progressText");
 const bar = document.getElementById("bar");
 const todayTitle = document.getElementById("todayTitle");
 let audio = null;
+let recognition = null;
 
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
@@ -80,6 +82,33 @@ function bedtimeSummary() {
     pickLine("review")
   ];
   return parts.filter(Boolean).join("");
+}
+
+function companionContext() {
+  const doneTasks = state.tasks.filter((task) => state.done?.[`task_${task.id}`]).map((task) => task.title);
+  const focusNotes = state.tasks
+    .map((task) => {
+      const focus = state.dailyNotes?.[task.id]?.focus;
+      return focus ? `${task.title}:${focus}` : "";
+    })
+    .filter(Boolean);
+  const latestFeedback = state.teacherFeedback[0];
+  return {
+    weather: state.weather,
+    doneTasks,
+    focusNotes,
+    latestFeedback: latestFeedback ? `${teacherSubjects[latestFeedback.subject]?.name || "练习"} ${latestFeedback.focus}，下次${latestFeedback.nextAction || "继续练"}` : ""
+  };
+}
+
+function renderConversation() {
+  const conversation = state.companion?.conversation || [];
+  if (!conversation.length) {
+    return `<div class="chatEmpty">你可以对小光说：我今天不想学、数学有点烦、网球打得不错，或者只是说“陪我一下”。</div>`;
+  }
+  return conversation
+    .map((item) => `<div class="bubble ${item.role === "user" ? "userBubble" : "lightBubble"}"><b>${item.role === "user" ? "八宝" : "小光"}</b><br>${escapeHtml(item.text)}</div>`)
+    .join("");
 }
 
 function choiceButtons(field, options) {
@@ -164,6 +193,26 @@ const renderers = {
   },
   daily() {
     return `<div class="grid2">${state.tasks.map((task) => taskCard(task)).join("")}</div>`;
+  },
+  companion() {
+    return `<div class="grid2">
+      <div class="card">
+        <h2>小光在听</h2>
+        <div class="chatBox" id="chatBox">${renderConversation()}</div>
+        <label>直接跟小光说</label>
+        <textarea id="companionInput" placeholder="例如：我今天不想做数学，感觉很烦。"></textarea>
+        <div class="row">
+          <button class="primary" id="sendCompanion">发送并朗读</button>
+          <button class="secondary" id="voiceCompanion">🎙 语音输入</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>小光会记得</h2>
+        <div class="note blue">${companionProfile.learningPromise}</div>
+        <div class="history">今天状态：${escapeHtml(state.weather || "还没选")}<br>完成：${taskDoneCount()}/${state.tasks.length} 项<br>最近记忆：${escapeHtml(state.companion?.moments?.[0]?.text || "还没有")}</div>
+        <button class="primary secondary" id="bedtimeSummaryCompanion">说睡前小结</button>
+      </div>
+    </div>`;
   },
   feedback() {
     const selected = state.feedbackSubject || "tennis";
@@ -261,6 +310,9 @@ function bindAll() {
     addCompanionMoment(document.getElementById("companionMoment").value, "home");
     renderPages("home");
   });
+  document.getElementById("sendCompanion")?.addEventListener("click", sendCompanionMessage);
+  document.getElementById("voiceCompanion")?.addEventListener("click", startCompanionVoiceInput);
+  document.getElementById("bedtimeSummaryCompanion")?.addEventListener("click", () => speak(bedtimeSummary()));
   document.getElementById("feedbackSubject")?.addEventListener("change", (event) => {
     state.feedbackSubject = event.target.value;
     save();
@@ -300,6 +352,55 @@ function bindAll() {
   });
 }
 
+async function sendCompanionMessage() {
+  const input = document.getElementById("companionInput");
+  const message = input?.value.trim();
+  if (!message) return;
+  input.value = "";
+  addCompanionMessage("user", message);
+  renderPages("companion");
+  try {
+    const response = await fetch("/api/companion-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        context: companionContext(),
+        recentMessages: state.companion?.conversation || []
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "chat failed");
+    addCompanionMessage("assistant", data.reply);
+    addCompanionMoment(data.reply, "companion");
+    renderPages("companion");
+    speak(data.reply);
+  } catch {
+    const fallback = "我在。我们先不急着解决全部，先把这件事变小一点。";
+    addCompanionMessage("assistant", fallback);
+    renderPages("companion");
+    speak(fallback);
+  }
+}
+
+function startCompanionVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const input = document.getElementById("companionInput");
+  if (!SpeechRecognition || !input) {
+    alert("这个浏览器暂时不支持语音输入，可以先打字跟小光说。");
+    return;
+  }
+  if (recognition) recognition.stop();
+  recognition = new SpeechRecognition();
+  recognition.lang = "zh-CN";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.onresult = (event) => {
+    input.value = event.results[0][0].transcript;
+  };
+  recognition.start();
+}
+
 function renderProgress() {
   const count = progressCount();
   const percent = Math.min(100, Math.round((count / progressKeys.length) * 100));
@@ -328,7 +429,7 @@ async function speak(text) {
   if (!text) return;
   try {
     if (audio) audio.pause();
-    const voice = document.getElementById("voiceSel")?.value || "cedar";
+    const voice = document.getElementById("voiceSel")?.value || "marin";
     const response = await fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -336,7 +437,7 @@ async function speak(text) {
         text,
         voice,
         model: "gpt-4o-mini-tts",
-        instructions: "像温暖的家庭学习伙伴一样朗读，短句、自然、少说教。"
+        instructions: "像一个熟悉八宝的温暖伙伴在身边说话。语速自然，有轻微停顿和呼吸感，不要播音腔，不要机器人客服感。"
       })
     });
     if (!response.ok) throw new Error("tts failed");

@@ -28,7 +28,12 @@ function normalizeState(raw) {
     weekly: raw.weekly || {},
     teacherFeedback: raw.teacherFeedback || [],
     dadNotes: raw.dadNotes || [],
-    companion: raw.companion || { moments: [], lastSpokenAt: "", quietMode: false },
+    companion: {
+      moments: raw.companion?.moments || [],
+      conversation: raw.companion?.conversation || [],
+      lastSpokenAt: raw.companion?.lastSpokenAt || "",
+      quietMode: Boolean(raw.companion?.quietMode)
+    },
     done: raw.done || {}
   };
 }
@@ -67,14 +72,24 @@ export function addDadNote(text, tone = "warm") {
 export function addCompanionMoment(text, source = "daily") {
   const value = String(text || "").trim();
   if (!value) return;
-  state.companion = state.companion || { moments: [], lastSpokenAt: "", quietMode: false };
+  state.companion = state.companion || { moments: [], conversation: [], lastSpokenAt: "", quietMode: false };
   state.companion.moments.unshift({ id: crypto.randomUUID(), createdAt: new Date().toISOString(), source, text: value });
   state.companion.moments = state.companion.moments.slice(0, 30);
   save();
 }
 
+export function addCompanionMessage(role, text) {
+  const value = String(text || "").trim();
+  if (!value) return;
+  state.companion = state.companion || { moments: [], conversation: [], lastSpokenAt: "", quietMode: false };
+  state.companion.conversation.push({ id: crypto.randomUUID(), createdAt: new Date().toISOString(), role, text: value });
+  state.companion.conversation = state.companion.conversation.slice(-30);
+  if (role === "assistant") state.companion.lastSpokenAt = new Date().toISOString();
+  save();
+}
+
 export function setQuietMode(value) {
-  state.companion = state.companion || { moments: [], lastSpokenAt: "", quietMode: false };
+  state.companion = state.companion || { moments: [], conversation: [], lastSpokenAt: "", quietMode: false };
   state.companion.quietMode = value;
   save();
 }
