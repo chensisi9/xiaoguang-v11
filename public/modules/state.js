@@ -28,6 +28,7 @@ function normalizeState(raw) {
     weekly: raw.weekly || {},
     teacherFeedback: raw.teacherFeedback || [],
     dadNotes: raw.dadNotes || [],
+    companion: raw.companion || { moments: [], lastSpokenAt: "", quietMode: false },
     done: raw.done || {}
   };
 }
@@ -63,6 +64,21 @@ export function addDadNote(text, tone = "warm") {
   save();
 }
 
+export function addCompanionMoment(text, source = "daily") {
+  const value = String(text || "").trim();
+  if (!value) return;
+  state.companion = state.companion || { moments: [], lastSpokenAt: "", quietMode: false };
+  state.companion.moments.unshift({ id: crypto.randomUUID(), createdAt: new Date().toISOString(), source, text: value });
+  state.companion.moments = state.companion.moments.slice(0, 30);
+  save();
+}
+
+export function setQuietMode(value) {
+  state.companion = state.companion || { moments: [], lastSpokenAt: "", quietMode: false };
+  state.companion.quietMode = value;
+  save();
+}
+
 export function snapshotToday() {
   const snapshot = {
     id: `${state.date}-${Date.now()}`,
@@ -76,7 +92,8 @@ export function snapshotToday() {
     tasks: state.tasks,
     dailyNotes: state.dailyNotes,
     teacherFeedback: state.teacherFeedback,
-    dadNotes: state.dadNotes
+    dadNotes: state.dadNotes,
+    companion: state.companion
   };
   history = [snapshot, ...history.filter((item) => item.date !== state.date)].slice(0, 120);
   saveHistory();

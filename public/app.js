@@ -1,5 +1,6 @@
-import { dadMessages, humanToneLines, pagesDef, progressKeys, teacherSubjects, TODAY } from "./modules/schema.js";
+import { companionLines, companionProfile, dadMessages, humanToneLines, pagesDef, progressKeys, teacherSubjects, TODAY } from "./modules/schema.js";
 import {
+  addCompanionMoment,
   addDadNote,
   addTeacherFeedback,
   deleteHistoryItem,
@@ -8,6 +9,7 @@ import {
   progressCount,
   save,
   setDone,
+  setQuietMode,
   snapshotToday,
   state
 } from "./modules/state.js";
@@ -48,6 +50,38 @@ function taskDoneCount() {
   return state.tasks.filter((task) => state.done?.[`task_${task.id}`]).length;
 }
 
+function pickLine(group) {
+  const lines = companionLines[group] || companionLines.start;
+  const seed = new Date().getDate() + taskDoneCount();
+  return lines[seed % lines.length];
+}
+
+function companionTodayLine() {
+  if (state.companion?.quietMode) return companionLines.tired[0];
+  if (taskDoneCount() > 0) return companionLines.done[taskDoneCount() % companionLines.done.length];
+  if (state.weather === "有点累" || state.weather === "不想学") return pickLine("tired");
+  return pickLine("start");
+}
+
+function taskCompanionHint(task) {
+  const note = state.dailyNotes?.[task.id]?.focus;
+  if (note) return `小光记得：${task.title} 今天只改“${escapeHtml(note)}”。`;
+  return `小光陪你把 ${task.title} 变小：先练 5 分钟，只改一个点。`;
+}
+
+function bedtimeSummary() {
+  const doneTasks = state.tasks.filter((task) => state.done?.[`task_${task.id}`]).map((task) => task.title);
+  const feedback = state.teacherFeedback[0];
+  const parts = [
+    `八宝，今天小光记住了：你完成了 ${taskDoneCount()} 项每日练习。`,
+    doneTasks.length ? `已经完成的是：${doneTasks.join("、")}。` : "就算还没完成，也可以先从一个最小动作开始。",
+    feedback ? `老师反馈里，最近一次重点是${teacherSubjects[feedback.subject]?.name || "练习"}的${feedback.focus}。` : "",
+    state.weekly?.next ? `下周的小重点是：${state.weekly.next}。` : "",
+    pickLine("review")
+  ];
+  return parts.filter(Boolean).join("");
+}
+
 function choiceButtons(field, options) {
   return options
     .map(([value, hint]) => `<button class="choice ${state[field] === value ? "active" : ""}" data-choice-field="${field}" data-choice="${escapeHtml(value)}"><b>${value}</b><span class="small">${hint}</span></button>`)
@@ -65,6 +99,7 @@ function taskCard(task, compact = false) {
     <div class="taskTop"><div class="icon">${task.icon}</div><div class="pill">${task.type}</div></div>
     <h2>${task.title}</h2>
     <p>${task.detail}</p>
+    <div class="note green">${taskCompanionHint(task)}</div>
     <div class="note blue">${task.target}</div>
     ${compact ? "" : `<label>今天实际练了什么</label>${noteField(task, "today", "例如：20 道计算题 / 朗读第 3 段 / 第 4-8 小节")}` }
     ${compact ? "" : `<label>今天只改一个点</label>${noteField(task, "focus", "例如：计算前先圈关键词 / 换孔慢半拍 / 击球点靠前")}` }
@@ -114,8 +149,11 @@ const renderers = {
       <div class="card">
         <h2>今天状态</h2>
         <div class="choiceGrid">${choiceButtons("weather", [["很好", "可以正常练"], ["还行", "每项做短一点"], ["有点累", "只保留三项"], ["不想学", "先做一项最小动作"]])}</div>
-        <div class="quote">今天完成 ${taskDoneCount()}/${state.tasks.length} 项。够不够，不看全满，看有没有把一个小点练准。</div>
-        <button class="primary secondary" id="quietBtn">少说模式</button>
+        <div class="quote">${companionTodayLine()}</div>
+        <label>想让小光记住的一句话</label>
+        <textarea id="companionMoment" placeholder="例如：今天数学审题有点烦，但我还是开始了。"></textarea>
+        <button class="primary secondary" id="saveCompanionMoment">让小光记住</button>
+        <button class="primary secondary" id="quietBtn">${state.companion?.quietMode ? "退出少说" : "少说陪伴"}</button>
       </div>
       <div class="card">
         <h2>今日五项</h2>
@@ -155,7 +193,8 @@ const renderers = {
       </div>
       <div class="card">
         <h2>复盘提醒</h2>
-        <div class="note green">不用评价孩子够不够努力。只看：哪一项更稳定了，哪个错误反复出现，下一周少做一点但做准一点。</div>
+        <div class="note green">不用评价孩子够不够努力。小光只看：哪一项更稳定了，哪个错误反复出现，下一周少做一点但做准一点。</div>
+        <button class="primary secondary" id="bedtimeSummary">小光说睡前小结</button>
         <button class="primary secondary" id="snapshotFromWeekly">保存今天</button>
       </div>
     </div>`;
@@ -169,7 +208,7 @@ const renderers = {
   parent() {
     return `<div class="grid2">
       <div class="card"><h2>爸爸留言</h2><label>选一句今天能说的话</label><select id="dadMessage">${dadMessages.map((message) => `<option>${escapeHtml(message)}</option>`).join("")}</select><button class="primary" id="saveDadNote">保存留言</button></div>
-      <div class="card"><h2>语气</h2><div class="choiceGrid">${Object.entries(humanToneLines).map(([tone, lines]) => `<button class="choice" data-tone="${tone}"><b>${tone}</b><span class="small">${escapeHtml(lines[0])}</span></button>`).join("")}</div><div class="history">${state.dadNotes.map((note) => `${escapeHtml(note.text)}<br><span class="tiny">${new Date(note.createdAt).toLocaleString("zh-CN")}</span>`).join("<hr>") || "还没有留言。"}</div></div>
+      <div class="card"><h2>小光底层陪伴</h2><div class="note blue">${companionProfile.learningPromise}</div><div class="choiceGrid">${Object.entries(humanToneLines).map(([tone, lines]) => `<button class="choice" data-tone="${tone}"><b>${tone}</b><span class="small">${escapeHtml(lines[0])}</span></button>`).join("")}</div><div class="history">${state.companion?.moments?.map((moment) => `${escapeHtml(moment.text)}<br><span class="tiny">${new Date(moment.createdAt).toLocaleString("zh-CN")}</span>`).join("<hr>") || "小光还没有今日记忆。"}</div></div>
     </div>`;
   }
 };
@@ -212,7 +251,16 @@ function bindAll() {
       renderPages("daily");
     };
   });
-  document.getElementById("quietBtn")?.addEventListener("click", () => speak("我在。今天先少说。我们只选一个最小动作，做完就算开始了。"));
+  document.getElementById("quietBtn")?.addEventListener("click", () => {
+    const next = !state.companion?.quietMode;
+    setQuietMode(next);
+    speak(next ? "我在。今天先少说。我们只选一个最小动作，做完就算开始了。" : "好，我回来陪你。我们还是慢慢来。");
+    renderPages("home");
+  });
+  document.getElementById("saveCompanionMoment")?.addEventListener("click", () => {
+    addCompanionMoment(document.getElementById("companionMoment").value, "home");
+    renderPages("home");
+  });
   document.getElementById("feedbackSubject")?.addEventListener("change", (event) => {
     state.feedbackSubject = event.target.value;
     save();
@@ -235,6 +283,7 @@ function bindAll() {
     snapshotToday();
     renderPages("weekly");
   });
+  document.getElementById("bedtimeSummary")?.addEventListener("click", () => speak(bedtimeSummary()));
   document.querySelectorAll("[data-delete-history]").forEach((button) => {
     button.onclick = () => {
       deleteHistoryItem(button.dataset.deleteHistory);

@@ -106,6 +106,36 @@ export const humanToneLines = {
   brave: ["不用怕难，我们只改一个小点。"]
 };
 
+export const companionProfile = {
+  name: "小光",
+  role: "陪八宝每日练习的伙伴",
+  boundaries: ["不无限聊天", "不替八宝完成任务", "不评价孩子够不够努力", "每次只推一个小动作"],
+  learningPromise: "先让八宝愿意开始，再把一个动作练准。"
+};
+
+export const companionLines = {
+  start: [
+    "我在。今天不用一下子变厉害，先开始一小步。",
+    "我们不追求全满，只把一个动作做准。",
+    "先选一项最容易开始的，做完它，今天就有光了。"
+  ],
+  tired: [
+    "今天有点累，那就把任务变小，不把你变硬。",
+    "少说一点也可以。我们只做一项最小动作。",
+    "先喝水，坐一会儿。等身体回来，大脑才好启动。"
+  ],
+  done: [
+    "我记住了：今天你不是空想，你真的练过了。",
+    "完成不是重点，找到下次怎么练才是重点。",
+    "这一项已经留下痕迹了，明天会轻一点。"
+  ],
+  review: [
+    "今天最值得留下的，不是做了多少，而是哪一个小点变准了。",
+    "如果只带走一句话：少一点，准一点，明天接着来。",
+    "小光收好今天的记录。八宝不是任务列表，是一个慢慢长本领的人。"
+  ]
+};
+
 export function createInitialState() {
   return {
     date: TODAY,
@@ -115,6 +145,11 @@ export function createInitialState() {
     weekly: {},
     teacherFeedback: [],
     dadNotes: [],
+    companion: {
+      moments: [],
+      lastSpokenAt: "",
+      quietMode: false
+    },
     done: {}
   };
 }
