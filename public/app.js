@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260603-examples";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260603-weekly";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260603-examples";
+} from "./modules/state.js?v=20260603-weekly";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -139,7 +139,65 @@ function taskDoneCount() {
 }
 
 function todayLoadProfile() {
-  return loadProfiles[state.weather] || loadProfiles["还行"];
+  const base = loadProfiles[state.weather] || loadProfiles["还行"];
+  const schedule = todaySchedule();
+  const required = schedule.requiredOverride || base.required;
+  const optional = uniqueList([...base.optional, ...(schedule.optionalExtra || [])]).filter((id) => !required.includes(id));
+  const paused = uniqueList([...base.paused, ...(schedule.pausedExtra || [])]).filter((id) => !required.includes(id) && !optional.includes(id));
+  return {
+    ...base,
+    name: `${base.name} · ${schedule.title}`,
+    summary: `${base.summary} ${schedule.energy}`,
+    required,
+    optional,
+    paused,
+    targets: {
+      ...base.targets,
+      ...(schedule.targetAdjust || {})
+    },
+    template: scheduleTemplate(base, schedule),
+    schedule
+  };
+}
+
+function todaySchedule() {
+  return weeklySchedule[new Date(TODAY).getDay()] || weeklySchedule[1];
+}
+
+function uniqueList(items) {
+  return [...new Set(items)];
+}
+
+function scheduleTemplate(base, schedule) {
+  const lines = [
+    `${schedule.day}：${schedule.title}。${schedule.school}`,
+    ...schedule.fixed.map((item) => `固定安排：${item}`),
+    `今日原则：${schedule.energy}`
+  ];
+  const required = schedule.requiredOverride || base.required;
+  required.forEach((id) => {
+    const label = {
+      math: "数学",
+      english: "英语",
+      chinese: "语文",
+      harmonica: "口琴",
+      tennis: "网球"
+    }[id];
+    if (label) lines.push(`${label}：${(schedule.targetAdjust || base.targets)[id] || base.targets[id]}`);
+  });
+  if (schedule.optionalExtra?.length) lines.push(`可选：${schedule.optionalExtra.map((id) => taskNameById(id)).join("、")}，有余力再做。`);
+  if (schedule.pausedExtra?.length) lines.push(`暂停：${schedule.pausedExtra.map((id) => taskNameById(id)).join("、")}，今天不补债。`);
+  return lines;
+}
+
+function taskNameById(id) {
+  return {
+    math: "数学",
+    english: "英语",
+    chinese: "语文",
+    harmonica: "口琴",
+    tennis: "网球"
+  }[id] || id;
 }
 
 function taskLoadStatus(task) {
@@ -230,6 +288,7 @@ function companionContext() {
   return {
     weather: state.weather,
     loadProfile: todayLoadProfile().name,
+    weeklySchedule: todaySchedule(),
     doneTasks,
     focusNotes,
     latestFeedback: latestFeedback ? `${teacherSubjects[latestFeedback.subject]?.name || "练习"} ${latestFeedback.focus}，下次${latestFeedback.nextAction || "继续练"}` : "",
@@ -329,6 +388,17 @@ function loadPlanCard() {
   </div>`;
 }
 
+function scheduleCard() {
+  const schedule = todaySchedule();
+  return `<div class="card">
+    <div class="taskTop"><div class="pill">一周时间表</div><div class="tiny">${escapeHtml(schedule.day)}</div></div>
+    <h2>${escapeHtml(schedule.title)}</h2>
+    <p>${escapeHtml(schedule.school)}</p>
+    ${schedule.fixed.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}
+    <div class="note blue">${escapeHtml(schedule.energy)}</div>
+  </div>`;
+}
+
 function teacherSubjectOptions(selected = "tennis") {
   return Object.entries(teacherSubjects).map(([key, item]) => `<option value="${key}" ${selected === key ? "selected" : ""}>${item.icon} ${item.name}</option>`).join("");
 }
@@ -381,6 +451,7 @@ const renderers = {
         <button class="primary secondary" id="saveCompanionMoment">让大白记住</button>
         <button class="primary secondary" id="quietBtn">${state.companion?.quietMode ? "退出少说" : "少说陪伴"}</button>
       </div>
+      ${scheduleCard()}
       ${loadPlanCard()}
       ${reviewPlanCard(true)}
       <div class="card">
@@ -397,7 +468,7 @@ const renderers = {
     const required = requiredTasks();
     const optional = optionalTasks();
     const paused = pausedTasks();
-    return `${reviewPlanCard()}${loadPlanCard()}<div class="card"><h2>今天照这个节奏</h2>${todayLoadProfile().template.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
+    return `${reviewPlanCard()}${scheduleCard()}${loadPlanCard()}<div class="card"><h2>今天照这个节奏</h2>${todayLoadProfile().template.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
       <div class="grid2">${required.map((task) => taskCard(task)).join("")}</div>
       ${optional.length ? `<div class="card"><h2>可选小动作</h2><p>做完必做还有余力，再选这里。没做也不算失败。</p></div><div class="grid2">${optional.map((task) => taskCard(task)).join("")}</div>` : ""}
       ${paused.length ? `<div class="card"><h2>今日暂停</h2>${paused.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b><br>${escapeHtml(taskLoadTarget(task))}</div>`).join("")}</div>` : ""}`;

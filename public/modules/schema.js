@@ -107,6 +107,126 @@ export const finalReviewPlan = {
   }
 };
 
+export const weeklySchedule = {
+  0: {
+    day: "周日",
+    title: "上午口才课日",
+    school: "无校内放学",
+    fixed: ["10:30-12:10 口才课"],
+    energy: "上午已有输出课，下午只做轻量复习。",
+    requiredOverride: ["math", "english"],
+    optionalExtra: ["chinese"],
+    pausedExtra: ["harmonica", "tennis"],
+    targetAdjust: {
+      math: "周日轻量：人教四下 5道计算/简算 + 1个错因。",
+      english: "周日轻量：精通四下听读1小段 + 2组问答。",
+      chinese: "可选：口才课已经练表达，语文只补1个课内关键词或1句写具体。",
+      harmonica: "周日暂停：上午有口才课，不补债。",
+      tennis: "周日暂停：保护下午恢复。"
+    }
+  },
+  1: {
+    day: "周一",
+    title: "普通复习日",
+    school: "16:30 放学",
+    fixed: ["放学较晚，先休息再进入短复习"],
+    energy: "适合标准短版，三科主线优先。",
+    requiredOverride: null,
+    optionalExtra: [],
+    pausedExtra: [],
+    targetAdjust: {
+      math: "周一：人教四下 8道计算/简算 + 1道应用题，先恢复节奏。",
+      english: "周一：精通四下听读 + 2组问答。",
+      chinese: "周一：人教四下1个课内点 + 1句表达。"
+    }
+  },
+  2: {
+    day: "周二",
+    title: "口琴课日",
+    school: "15:20 放学",
+    fixed: ["口琴课", "17:00 下课"],
+    energy: "口琴课已经算音乐训练，晚上不再加口琴。",
+    requiredOverride: ["math", "english", "chinese"],
+    optionalExtra: ["tennis"],
+    pausedExtra: ["harmonica"],
+    targetAdjust: {
+      math: "周二：人教四下 6道计算/简算 + 1个错因，下课后短练即可。",
+      english: "周二：精通四下听读1小段 + 2组问答。",
+      chinese: "周二：人教四下1个课内点，只说画面/中心。",
+      harmonica: "今天已有口琴课，算完成方向，不再额外练。",
+      tennis: "可选：5分钟小垫步或挥拍。"
+    }
+  },
+  3: {
+    day: "周三",
+    title: "写作课日",
+    school: "写作课 16:00-18:30",
+    fixed: ["16:00-18:30 写作课"],
+    energy: "写作课当天语文输出已经很重，晚上只做数学和英语保底。",
+    requiredOverride: ["math", "english"],
+    optionalExtra: ["chinese"],
+    pausedExtra: ["harmonica", "tennis"],
+    targetAdjust: {
+      math: "周三保底：人教四下 5道计算/简算，圈关键词。",
+      english: "周三保底：精通四下只做2组问答或1句输出。",
+      chinese: "写作课已算语文训练；可选只记录1句今天写作课学到的表达。",
+      harmonica: "周三暂停：写作课后不补债。",
+      tennis: "周三暂停：写作课后不补债。"
+    }
+  },
+  4: {
+    day: "周四",
+    title: "早放学复习日",
+    school: "15:20 放学",
+    fixed: ["早放学，适合做一轮主科复习"],
+    energy: "本周最适合补主科的一天。",
+    requiredOverride: ["math", "english", "chinese", "harmonica", "tennis"],
+    optionalExtra: [],
+    pausedExtra: [],
+    targetAdjust: {
+      math: "周四主攻：人教四下 10道计算/简算 + 2道图形/统计题。",
+      english: "周四主攻：精通四下听读 + 3组问答 + 3句输出。",
+      chinese: "周四主攻：人教四下1段课内阅读 + 1句写具体。",
+      harmonica: "周四短练：5分钟，只练一个小节。",
+      tennis: "周四短练：10分钟，只练一个动作点。"
+    }
+  },
+  5: {
+    day: "周五",
+    title: "网球课日",
+    school: "网球课 16:00-17:30",
+    fixed: ["16:00-17:30 网球课"],
+    energy: "网球课已经算运动训练，晚上只做轻量主科。",
+    requiredOverride: ["math", "english", "chinese"],
+    optionalExtra: ["harmonica"],
+    pausedExtra: ["tennis"],
+    targetAdjust: {
+      math: "周五轻量：人教四下 5道计算/简算，抓1个错因。",
+      english: "周五轻量：精通四下2组问答，可用网球课做句子素材。",
+      chinese: "周五轻量：人教四下1个词句或1句写具体。",
+      harmonica: "可选：3分钟，只吹最熟的一小段。",
+      tennis: "今天已有网球课，算完成方向，不再额外练。"
+    }
+  },
+  6: {
+    day: "周六",
+    title: "弹性复盘日",
+    school: "无校内放学",
+    fixed: ["适合补漏和整理错题"],
+    energy: "不排满，留家庭和恢复时间。",
+    requiredOverride: ["math", "english", "chinese"],
+    optionalExtra: ["harmonica", "tennis"],
+    pausedExtra: [],
+    targetAdjust: {
+      math: "周六复盘：整理本周1个数学错因 + 做3道同类题。",
+      english: "周六复盘：精通四下3句输出，或RAZ/自然拼读轻量输入。",
+      chinese: "周六复盘：整理1个课内表达或作文素材。",
+      harmonica: "可选：5分钟。",
+      tennis: "可选：10分钟。"
+    }
+  }
+};
+
 export const exampleBank = {
   math: [
     {
