@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260603-adaptive-load";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260603-examples";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260603-adaptive-load";
+} from "./modules/state.js?v=20260603-examples";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -153,6 +153,22 @@ function taskLoadTarget(task) {
   return todayLoadProfile().targets?.[task.id] || task.target;
 }
 
+function exampleCountForTask(task) {
+  const profile = todayLoadProfile().name;
+  if (!exampleBank[task.id]) return 0;
+  if (profile === "完整训练版") return 3;
+  if (profile === "标准短版") return 2;
+  return 1;
+}
+
+function taskExamples(task) {
+  const examples = exampleBank[task.id] || [];
+  const count = exampleCountForTask(task);
+  if (!count) return [];
+  const seed = new Date(TODAY).getDate() + task.id.length;
+  return Array.from({ length: Math.min(count, examples.length) }, (_, index) => examples[(seed + index) % examples.length]);
+}
+
 function requiredTasks() {
   const profile = todayLoadProfile();
   return state.tasks.filter((task) => profile.required.includes(task.id));
@@ -278,12 +294,21 @@ function taskCard(task, compact = false) {
   const done = state.done?.[`task_${task.id}`];
   const status = taskLoadStatus(task);
   const paused = status === "暂停";
+  const examples = paused ? [] : taskExamples(task);
   return `<div class="card task ${done ? "done" : ""}">
     <div class="taskTop"><div class="icon">${task.icon}</div><div class="pill">${task.type} · ${status}</div></div>
     <h2>${task.title}</h2>
     <p>${task.detail}</p>
     <div class="note green">${taskCompanionHint(task)}</div>
     <div class="note blue">${escapeHtml(taskLoadTarget(task))}</div>
+    ${examples.length ? `<div class="exampleBox">
+      <h3>今天直接做</h3>
+      ${examples.map((example, index) => `<div class="history">
+        <b>${index + 1}. ${escapeHtml(example.point)}</b><br>
+        ${escapeHtml(example.prompt)}
+        <details><summary>提示 / 答案</summary><div class="tiny">${escapeHtml(example.hint)}<br><b>参考：</b>${escapeHtml(example.answer)}</div></details>
+      </div>`).join("")}
+    </div>` : ""}
     ${paused ? "" : compact ? "" : `<label>今天实际练了什么</label>${noteField(task, "today", "例如：6 道计算题 / 朗读第 3 段 / 第 4-8 小节")}` }
     ${paused ? "" : compact ? "" : `<label>今天只改一个点</label>${noteField(task, "focus", "例如：计算前先圈关键词 / 换孔慢半拍 / 击球点靠前")}` }
     ${paused ? "" : `<div class="ladder" data-task="${task.id}">
@@ -360,7 +385,10 @@ const renderers = {
       ${reviewPlanCard(true)}
       <div class="card">
         <h2>今日任务会随状态变化</h2>
-        ${state.tasks.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b> · ${taskLoadStatus(task)} · ${state.done?.[`task_${task.id}`] ? "已完成" : "未完成"}<br><span class="tiny">${escapeHtml(taskLoadTarget(task))}</span></div>`).join("")}
+        ${state.tasks.map((task) => {
+          const examples = taskExamples(task);
+          return `<div class="history"><b>${task.icon} ${task.title}</b> · ${taskLoadStatus(task)} · ${state.done?.[`task_${task.id}`] ? "已完成" : "未完成"}<br><span class="tiny">${escapeHtml(taskLoadTarget(task))}</span>${examples.length ? `<br><span class="tiny">例题：${escapeHtml(examples[0].point)} · ${escapeHtml(examples[0].prompt)}</span>` : ""}</div>`;
+        }).join("")}
         <button class="primary" data-jump="daily">开始每日任务</button>
       </div>
     </div>`;

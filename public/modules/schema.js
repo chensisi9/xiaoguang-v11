@@ -107,6 +107,105 @@ export const finalReviewPlan = {
   }
 };
 
+export const exampleBank = {
+  math: [
+    {
+      point: "小数加减法",
+      prompt: "计算并验算：37.6 - 8.75 + 12.4 = ?",
+      hint: "先把小数点对齐。八宝教练重点抓：8.75 和 12.4 的位数不同。",
+      answer: "41.25"
+    },
+    {
+      point: "运算律",
+      prompt: "用简便方法计算：125 x 32 x 25。",
+      hint: "把 32 拆成 8 x 4，让 125 x 8、25 x 4 先配对。",
+      answer: "100000"
+    },
+    {
+      point: "三角形",
+      prompt: "一个三角形两条边分别是 6 cm 和 9 cm，第三条边可能是 3 cm、8 cm、16 cm 中的哪一个？",
+      hint: "第三边要大于两边之差，小于两边之和。",
+      answer: "8 cm"
+    },
+    {
+      point: "平均数",
+      prompt: "四次发球训练命中数分别是 7、9、8、10，平均每次命中几个？",
+      hint: "先求总数，再平均分成 4 份。",
+      answer: "8.5 个"
+    },
+    {
+      point: "审题陷阱",
+      prompt: "一根绳子长 12.5 米，用去 3.8 米，又接上 2.35 米，现在长多少米？",
+      hint: "用去是减，接上是加。先写式子再算。",
+      answer: "11.05 米"
+    }
+  ],
+  chinese: [
+    {
+      point: "古诗画面",
+      prompt: "看到“孤云”“独去闲”这类意象时，先不背意思，先说：画面里有什么？人物心情可能怎样？",
+      hint: "用“我看见……我感觉……”说两句。",
+      answer: "例：我看见一片云慢慢飘远，画面很安静，人物可能有一点孤独，也有一点自在。"
+    },
+    {
+      point: "托物言志",
+      prompt: "如果一首诗写梅花、竹子、石灰，却不只是写植物或物品，它可能在表达什么？",
+      hint: "先说物的特点，再说人的品质。",
+      answer: "例：写梅花不怕冷，可能是在写人坚强、有骨气。"
+    },
+    {
+      point: "课内阅读",
+      prompt: "读一段课文后，用一句话回答：这段主要写了谁/什么？发生了什么变化？",
+      hint: "句式：这段主要写了……从……变得……",
+      answer: "按今天读的课文填，重点是主语清楚、变化清楚。"
+    },
+    {
+      point: "一句写具体",
+      prompt: "把“花很好看”改具体，至少加上颜色、样子或动作中的两个。",
+      hint: "别写很多，先让画面能被看见。",
+      answer: "例：粉色的花挤在枝头，风一吹，像一小片晃动的云。"
+    },
+    {
+      point: "词句积累",
+      prompt: "从今天复习的课内词语里选 1 个，造一个和新家、网球或桃树有关的句子。",
+      hint: "把词放进真实生活，记得更牢。",
+      answer: "按所选词语造句，要求句子完整、场景清楚。"
+    }
+  ],
+  english: [
+    {
+      point: "where / when",
+      prompt: "Choose and answer: ___ is your tennis camp? It is in Wuhan. ___ is your tennis camp? It is in July.",
+      hint: "Where 问地点，When 问时间。",
+      answer: "Where; When"
+    },
+    {
+      point: "the / they / their",
+      prompt: "Fill in: ___ are my friends. This is ___ tennis ball. I like ___ blue bag.",
+      hint: "they 是他们，their 是他们的，the 是这个/那个。",
+      answer: "They; their; the"
+    },
+    {
+      point: "3句输出",
+      prompt: "Say 3 sentences about today: I have ___. I like ___. I can ___.",
+      hint: "先说完整，不追求漂亮。",
+      answer: "例：I have a tennis racket. I like English. I can read a story."
+    },
+    {
+      point: "because",
+      prompt: "Make one sentence: I like tennis because ___.",
+      hint: "because 后面说原因，可以很短。",
+      answer: "例：I like tennis because it is exciting."
+    },
+    {
+      point: "课本问答",
+      prompt: "Answer in a full sentence: What subject do you like?",
+      hint: "不要只答 English，要说完整句。",
+      answer: "I like English. / I like maths. / I like Chinese."
+    }
+  ]
+};
+
 export const progressKeys = defaultTasks.map((task) => `task_${task.id}`);
 
 export const teacherSubjects = {
