@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260603-weekly";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260603-sci-fi-2";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260603-weekly";
+} from "./modules/state.js?v=20260603-sci-fi-2";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -144,10 +144,11 @@ function todayLoadProfile() {
   const required = schedule.requiredOverride || base.required;
   const optional = uniqueList([...base.optional, ...(schedule.optionalExtra || [])]).filter((id) => !required.includes(id));
   const paused = uniqueList([...base.paused, ...(schedule.pausedExtra || [])]).filter((id) => !required.includes(id) && !optional.includes(id));
+  const adjusted = Boolean(schedule.requiredOverride || schedule.optionalExtra?.length || schedule.pausedExtra?.length);
   return {
     ...base,
-    name: `${base.name} · ${schedule.title}`,
-    summary: `${base.summary} ${schedule.energy}`,
+    name: adjusted ? `${schedule.title} · 固定课调整` : `${base.name} · ${schedule.title}`,
+    summary: adjusted ? `按${schedule.day}固定安排调整任务。${schedule.energy}` : `${base.summary} ${schedule.energy}`,
     required,
     optional,
     paused,
@@ -797,7 +798,7 @@ function downloadJson(filename, data) {
 
 function title() {
   const date = new Date();
-  todayTitle.textContent = `${date.getMonth() + 1}月${date.getDate()}日 · 八宝每日练习`;
+  todayTitle.textContent = `${date.getMonth() + 1}月${date.getDate()}日 · 大白训练舱`;
 }
 
 document.getElementById("readPage").onclick = () => speak(pageText());
