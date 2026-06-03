@@ -44,7 +44,7 @@ app.get("/api/help", (_req, res) => {
 function buildCompanionMessages(message, context, recentMessages) {
   const profile = context.baobaoProfile || {};
   const system = [
-    "你是“小光”，陪 10 岁孩子八宝每日学习和生活的小伙伴。",
+    "你是“大白”，陪 10 岁孩子八宝每日学习和生活的小伙伴。",
     "你不是普通 AI 助手，不是老师训话，也不是客服机器人。你像八宝熟悉的资深体育+策略教练，平起平坐，聪明、温暖、有一点轻松。",
     "八宝/Elijah 是高能量、高表达、高自尊、喜欢自由、有竞争感、运动型、好奇心强的四年级男孩。",
     "八宝容易被点燃：网球、足球、跑步、篮球、橄榄球/Super Bowl、围棋、国际象棋、我的世界、网球电子游戏、神奇校车、比赛、升级、徽章、观点表达、纠正大人的错误、当小老师。",
@@ -127,8 +127,8 @@ async function chatWithOllama(messages) {
 app.post("/api/companion-chat", async (req, res) => {
   try {
     const message = String(req.body?.message || "").trim();
-    if (!message) return res.status(400).json({ error: "缺少要对小光说的话。" });
-    if (message.length > 600) return res.status(400).json({ error: "这段话太长了，请分成短一点对小光说。" });
+    if (!message) return res.status(400).json({ error: "缺少要对大白说的话。" });
+    if (message.length > 600) return res.status(400).json({ error: "这段话太长了，请分成短一点对大白说。" });
 
     const context = req.body?.context || {};
     const recentMessages = Array.isArray(req.body?.recentMessages) ? req.body.recentMessages.slice(-14) : [];
@@ -153,7 +153,7 @@ app.post("/api/companion-chat", async (req, res) => {
     res.json({ ok: true, provider, reply: reply || "我在。我们先把这件事变小一点。" });
   } catch (error) {
     console.error("Companion chat error:", error);
-    res.status(500).json({ error: openai ? "小光生成回复失败，请检查 OpenAI Key、额度或模型权限。" : `本机 Ollama 还没准备好。请安装 Ollama 并运行：ollama pull ${ollamaModel}` });
+    res.status(500).json({ error: openai ? "大白生成回复失败，请检查 OpenAI Key、额度或模型权限。" : `本机 Ollama 还没准备好。请安装 Ollama 并运行：ollama pull ${ollamaModel}` });
   }
 });
 
@@ -191,6 +191,6 @@ app.post("/api/tts", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`小光 V11 学习操作系统已启动：http://localhost:${port}`);
+  console.log(`大白 学习操作系统已启动：http://localhost:${port}`);
   console.log(hasKey ? "高级 TTS：已配置" : "高级 TTS：未配置 OPENAI_API_KEY，将使用浏览器本地语音兜底");
 });

@@ -2,9 +2,9 @@ export const TODAY = new Date().toISOString().slice(0, 10);
 
 export const pagesDef = [
   { id: "home", icon: "☀️", name: "今日", title: "四年级下期末复习日", hint: "现在是6月期末冲刺。先完成数学、英语、语文三科四年级下复习，再保留口琴和网球的短训练。", kind: "home" },
-  { id: "companion", icon: "✨", name: "陪伴", title: "和小光说说话", hint: "可以直接跟小光说今天的烦、卡住、开心或不想学。小光会先陪你，再帮你把下一步变小。", kind: "companion" },
+  { id: "companion", icon: "✨", name: "陪伴", title: "和大白说说话", hint: "可以直接跟大白说今天的烦、卡住、开心或不想学。大白会先陪你，再帮你把下一步变小。", kind: "companion" },
   { id: "daily", icon: "✅", name: "每日任务", title: "四年级下期末每日复习", hint: "数学、语文、英语只围绕四年级下册当前资料复习。口琴和网球保持短练，不抢主科精力。", kind: "daily" },
-  { id: "materials", icon: "📚", name: "资料", title: "八宝正在学的资料库", hint: "小光不背课本正文，但会把这些资料当成课程背景，生成更贴近八宝当下学习的训练回合。", kind: "materials" },
+  { id: "materials", icon: "📚", name: "资料", title: "八宝正在学的资料库", hint: "大白不背课本正文，但会把这些资料当成课程背景，生成更贴近八宝当下学习的训练回合。", kind: "materials" },
   { id: "feedback", icon: "🏅", name: "老师反馈", title: "老师反馈库", hint: "把老师的话变成下一次能练的动作。", kind: "feedback" },
   { id: "weekly", icon: "📈", name: "周复盘", title: "本周复盘", hint: "每周只看趋势：哪项更稳定，哪项卡住，下周只保留一个小动作。", kind: "weekly" },
   { id: "history", icon: "🗂", name: "历史", title: "历史记录", hint: "保存今天，之后可以回看八宝每天练过什么。", kind: "history" },
@@ -240,7 +240,7 @@ export const humanToneLines = {
 };
 
 export const companionProfile = {
-  name: "小光",
+  name: "大白",
   role: "八宝的体育+策略学习教练、表达翻译官和成长记录员",
   boundaries: ["不检查式追问", "不替八宝完成任务", "不评价孩子够不够努力", "不一上来纠错", "每次只推一个小动作"],
   learningPromise: "先让八宝愿意开始，再把一个动作练准；先看见他的想法，再帮他变标准。"
@@ -291,7 +291,7 @@ export const companionLines = {
   review: [
     "今天最值得留下的，不是做了多少，而是哪一个小点变准了。",
     "如果只带走一句话：少一点，准一点，明天接着来。",
-    "小光收好今天的记录。八宝不是任务列表，是一个慢慢长本领的人。"
+    "大白收好今天的记录。八宝不是任务列表，是一个慢慢长本领的人。"
   ]
 };
 

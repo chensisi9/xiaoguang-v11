@@ -3,7 +3,7 @@ set -e
 cd "$(dirname "$0")"
 clear
 echo "========================================"
-echo " 小光 V4 · 一键启动"
+echo " 大白 · 一键启动"
 echo "========================================"
 echo ""
 
@@ -34,8 +34,8 @@ if [ ! -d "node_modules" ]; then
   npm install
 fi
 
-echo "🚀 正在启动小光后端..."
+echo "🚀 正在启动大白后端..."
 echo "浏览器地址：http://localhost:3000"
-echo "关闭这个窗口，小光后端也会停止。"
+echo "关闭这个窗口，大白后端也会停止。"
 (open "http://localhost:3000" >/dev/null 2>&1 || true) &
 npm start

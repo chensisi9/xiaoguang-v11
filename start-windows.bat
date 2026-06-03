@@ -1,8 +1,8 @@
 @echo off
 cd /d "%~dp0"
-title 小光 V4 一键启动
+title 大白 一键启动
 echo ========================================
-echo  小光 V4 · 一键启动
+echo  大白 · 一键启动
 echo ========================================
 echo.
 where node >nul 2>nul
@@ -26,7 +26,7 @@ if not exist node_modules (
   echo 正在安装依赖 npm install ...
   npm install
 )
-echo 正在启动小光后端...
+echo 正在启动大白后端...
 echo 浏览器地址：http://localhost:3000
 start http://localhost:3000
 npm start

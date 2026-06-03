@@ -1,7 +1,9 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260602-resources";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260603-dabai";
 
-export const storeKey = "xiaoguang_v11_state";
-export const historyKey = "xiaoguang_v11_history";
+export const storeKey = "dabai_state";
+export const historyKey = "dabai_history";
+const legacyStoreKey = "xiaoguang_v11_state";
+const legacyHistoryKey = "xiaoguang_v11_history";
 
 function readJson(key, fallback) {
   try {
@@ -41,12 +43,21 @@ function normalizeState(raw) {
   };
 }
 
-export let state = normalizeState(readJson(storeKey, {}));
-export let history = readJson(historyKey, []);
+function readWithLegacy(key, legacyKey, fallback) {
+  const current = localStorage.getItem(key);
+  if (current) return readJson(key, fallback);
+  const legacy = localStorage.getItem(legacyKey);
+  if (!legacy) return fallback;
+  localStorage.setItem(key, legacy);
+  return readJson(key, fallback);
+}
+
+export let state = normalizeState(readWithLegacy(storeKey, legacyStoreKey, {}));
+export let history = readWithLegacy(historyKey, legacyHistoryKey, []);
 
 export function save() {
   localStorage.setItem(storeKey, JSON.stringify(state));
-  window.dispatchEvent(new CustomEvent("xiaoguang:state-saved", { detail: state }));
+  window.dispatchEvent(new CustomEvent("dabai:state-saved", { detail: state }));
 }
 
 export function saveHistory() {

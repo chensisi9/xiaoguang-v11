@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260602-resources";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260603-dabai";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260602-resources";
+} from "./modules/state.js?v=20260603-dabai";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -68,15 +68,15 @@ function companionTodayLine() {
 
 function taskCompanionHint(task) {
   const note = state.dailyNotes?.[task.id]?.focus;
-  if (note) return `小光记得：${task.title} 今天只改“${escapeHtml(note)}”。`;
-  return `小光陪你把 ${task.title} 变小：先练 5 分钟，只改一个点。`;
+  if (note) return `大白记得：${task.title} 今天只改“${escapeHtml(note)}”。`;
+  return `大白陪你把 ${task.title} 变小：先练 5 分钟，只改一个点。`;
 }
 
 function bedtimeSummary() {
   const doneTasks = state.tasks.filter((task) => state.done?.[`task_${task.id}`]).map((task) => task.title);
   const feedback = state.teacherFeedback[0];
   const parts = [
-    `八宝，今天小光记住了：你完成了 ${taskDoneCount()} 项每日练习。`,
+    `八宝，今天大白记住了：你完成了 ${taskDoneCount()} 项每日练习。`,
     doneTasks.length ? `已经完成的是：${doneTasks.join("、")}。` : "就算还没完成，也可以先从一个最小动作开始。",
     feedback ? `老师反馈里，最近一次重点是${teacherSubjects[feedback.subject]?.name || "练习"}的${feedback.focus}。` : "",
     state.weekly?.next ? `下周的小重点是：${state.weekly.next}。` : "",
@@ -138,10 +138,10 @@ function reviewPlanCard(compact = false) {
 function renderConversation() {
   const conversation = state.companion?.conversation || [];
   if (!conversation.length) {
-    return `<div class="chatEmpty">你可以对小光说：我今天不想学、数学有点烦、网球打得不错，或者只是说“陪我一下”。</div>`;
+    return `<div class="chatEmpty">你可以对大白说：我今天不想学、数学有点烦、网球打得不错，或者只是说“陪我一下”。</div>`;
   }
   return conversation
-    .map((item) => `<div class="bubble ${item.role === "user" ? "userBubble" : "lightBubble"}"><b>${item.role === "user" ? "八宝" : "小光"}</b><br>${escapeHtml(item.text)}</div>`)
+    .map((item) => `<div class="bubble ${item.role === "user" ? "userBubble" : "lightBubble"}"><b>${item.role === "user" ? "八宝" : "大白"}</b><br>${escapeHtml(item.text)}</div>`)
     .join("");
 }
 
@@ -220,9 +220,9 @@ const renderers = {
         <h2>今天状态</h2>
         <div class="choiceGrid">${choiceButtons("weather", [["很好", "可以正常练"], ["还行", "每项做短一点"], ["有点累", "只保留三项"], ["不想学", "先做一项最小动作"]])}</div>
         <div class="quote">${companionTodayLine()}</div>
-        <label>想让小光记住的一句话</label>
+        <label>想让大白记住的一句话</label>
         <textarea id="companionMoment" placeholder="例如：今天数学审题有点烦，但我还是开始了。"></textarea>
-        <button class="primary secondary" id="saveCompanionMoment">让小光记住</button>
+        <button class="primary secondary" id="saveCompanionMoment">让大白记住</button>
         <button class="primary secondary" id="quietBtn">${state.companion?.quietMode ? "退出少说" : "少说陪伴"}</button>
       </div>
       ${reviewPlanCard(true)}
@@ -267,11 +267,11 @@ const renderers = {
   companion() {
     return `<div class="grid2">
       <div class="card">
-        <h2>小光在听</h2>
+        <h2>大白在听</h2>
         <div class="chatBox" id="chatBox">${renderConversation()}</div>
-        <label>直接跟小光说</label>
+        <label>直接跟大白说</label>
         <textarea id="companionInput" placeholder="例如：我今天不想做数学，感觉很烦。"></textarea>
-        <div class="status" id="companionStatus">点“开始说话”，说完后小光会自动回答。</div>
+        <div class="status" id="companionStatus">点“开始说话”，说完后大白会自动回答。</div>
         <div class="row">
           <button class="primary" id="voiceCompanion">🎙 开始说话</button>
           <button class="secondary" id="continuousCompanion">${continuousCompanion ? "连续对话：开" : "连续对话：关"}</button>
@@ -279,7 +279,7 @@ const renderers = {
         </div>
       </div>
       <div class="card">
-        <h2>小光会记得</h2>
+        <h2>大白会记得</h2>
         <div class="note blue">${companionProfile.learningPromise}</div>
         <div class="history">今天状态：${escapeHtml(state.weather || "还没选")}<br>完成：${taskDoneCount()}/${state.tasks.length} 项<br>最近记忆：${escapeHtml(state.companion?.moments?.[0]?.text || "还没有")}</div>
         <button class="primary secondary" id="bedtimeSummaryCompanion">说睡前小结</button>
@@ -314,8 +314,8 @@ const renderers = {
       </div>
       <div class="card">
         <h2>复盘提醒</h2>
-        <div class="note green">不用评价孩子够不够努力。小光只看：哪一项更稳定了，哪个错误反复出现，下一周少做一点但做准一点。</div>
-        <button class="primary secondary" id="bedtimeSummary">小光说睡前小结</button>
+        <div class="note green">不用评价孩子够不够努力。大白只看：哪一项更稳定了，哪个错误反复出现，下一周少做一点但做准一点。</div>
+        <button class="primary secondary" id="bedtimeSummary">大白说睡前小结</button>
         <button class="primary secondary" id="snapshotFromWeekly">保存今天</button>
       </div>
     </div>`;
@@ -329,7 +329,7 @@ const renderers = {
   parent() {
     return `<div class="grid2">
       <div class="card"><h2>爸爸留言</h2><label>选一句今天能说的话</label><select id="dadMessage">${dadMessages.map((message) => `<option>${escapeHtml(message)}</option>`).join("")}</select><button class="primary" id="saveDadNote">保存留言</button></div>
-      <div class="card"><h2>小光底层陪伴</h2><div class="note blue">${companionProfile.learningPromise}</div><div class="history"><b>八宝适合：</b>${baobaoProfile.coachingIdentities.join(" / ")}<br><b>容易被点燃：</b>${baobaoProfile.sparks.slice(0, 7).join("、")}<br><b>核心机制：</b>${baobaoProfile.interactionMechanisms.join("、")}<br><b>真实场景：</b>${baobaoProfile.upcomingScenes.join("、")}<br><b>避免：</b>${baobaoProfile.resistanceTriggers.slice(0, 5).join("、")}</div><div class="choiceGrid">${Object.entries(humanToneLines).map(([tone, lines]) => `<button class="choice" data-tone="${tone}"><b>${tone}</b><span class="small">${escapeHtml(lines[0])}</span></button>`).join("")}</div><div class="history">${state.companion?.moments?.map((moment) => `${escapeHtml(moment.text)}<br><span class="tiny">${new Date(moment.createdAt).toLocaleString("zh-CN")}</span>`).join("<hr>") || "小光还没有今日记忆。"}</div></div>
+      <div class="card"><h2>大白底层陪伴</h2><div class="note blue">${companionProfile.learningPromise}</div><div class="history"><b>八宝适合：</b>${baobaoProfile.coachingIdentities.join(" / ")}<br><b>容易被点燃：</b>${baobaoProfile.sparks.slice(0, 7).join("、")}<br><b>核心机制：</b>${baobaoProfile.interactionMechanisms.join("、")}<br><b>真实场景：</b>${baobaoProfile.upcomingScenes.join("、")}<br><b>避免：</b>${baobaoProfile.resistanceTriggers.slice(0, 5).join("、")}</div><div class="choiceGrid">${Object.entries(humanToneLines).map(([tone, lines]) => `<button class="choice" data-tone="${tone}"><b>${tone}</b><span class="small">${escapeHtml(lines[0])}</span></button>`).join("")}</div><div class="history">${state.companion?.moments?.map((moment) => `${escapeHtml(moment.text)}<br><span class="tiny">${new Date(moment.createdAt).toLocaleString("zh-CN")}</span>`).join("<hr>") || "大白还没有今日记忆。"}</div></div>
     </div>`;
   }
 };
@@ -419,7 +419,7 @@ function bindAll() {
       renderPages("history");
     };
   });
-  document.getElementById("exportHistory")?.addEventListener("click", () => downloadJson(`xiaoguang-history-${TODAY}.json`, history));
+  document.getElementById("exportHistory")?.addEventListener("click", () => downloadJson(`dabai-history-${TODAY}.json`, history));
   document.getElementById("saveDadNote")?.addEventListener("click", () => {
     addDadNote(document.getElementById("dadMessage").value);
     renderPages("parent");
@@ -473,7 +473,7 @@ function startCompanionVoiceInput() {
   recognition.lang = "zh-CN";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  if (status) status.textContent = "小光在听，说完停一下就会自动回答。";
+  if (status) status.textContent = "大白在听，说完停一下就会自动回答。";
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     input.value = transcript;
@@ -484,7 +484,7 @@ function startCompanionVoiceInput() {
     if (status) status.textContent = "刚才没听清，可以再点一次开始说话。";
   };
   recognition.onend = () => {
-    if (status && !input.value) status.textContent = "点“开始说话”，说完后小光会自动回答。";
+    if (status && !input.value) status.textContent = "点“开始说话”，说完后大白会自动回答。";
   };
   recognition.start();
 }
@@ -568,8 +568,8 @@ document.getElementById("stopVoice").onclick = () => {
   if (audio) audio.pause();
   if ("speechSynthesis" in window) speechSynthesis.cancel();
 };
-document.getElementById("exportBtn").onclick = () => downloadJson(`xiaoguang-${TODAY}.json`, state);
-window.addEventListener("xiaoguang:state-saved", renderProgress);
+document.getElementById("exportBtn").onclick = () => downloadJson(`dabai-${TODAY}.json`, state);
+window.addEventListener("dabai:state-saved", renderProgress);
 
 initNav();
 renderPages("home");

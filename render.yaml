@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: xiaoguang-v11
+    name: dabai
     env: node
     plan: free
     buildCommand: npm install
