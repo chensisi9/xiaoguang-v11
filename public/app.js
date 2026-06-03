@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260603-sci-fi-2";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260603-abroad-daily";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260603-sci-fi-2";
+} from "./modules/state.js?v=20260603-abroad-daily";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -147,6 +147,7 @@ function todayLoadProfile() {
   const adjusted = Boolean(schedule.requiredOverride || schedule.optionalExtra?.length || schedule.pausedExtra?.length);
   return {
     ...base,
+    baseKey: state.weather || "还行",
     name: adjusted ? `${schedule.title} · 固定课调整` : `${base.name} · ${schedule.title}`,
     summary: adjusted ? `按${schedule.day}固定安排调整任务。${schedule.energy}` : `${base.summary} ${schedule.energy}`,
     required,
@@ -159,6 +160,28 @@ function todayLoadProfile() {
     template: scheduleTemplate(base, schedule),
     schedule
   };
+}
+
+function resourceIntensityKey() {
+  const key = todayLoadProfile().baseKey;
+  if (key === "很好") return "full";
+  if (key === "还行") return "standard";
+  if (key === "有点累") return "support";
+  return "minimum";
+}
+
+function resourcePlanCard(compact = false) {
+  const mode = resourceIntensityKey();
+  const englishTracks = dailyResourceTracks.filter((track) => track.subject === "英语");
+  const mathTracks = dailyResourceTracks.filter((track) => track.subject === "数学");
+  const renderTrack = (track) => `<div class="history"><b>${escapeHtml(track.title)}</b><br><span class="tiny">${escapeHtml(track.purpose)}</span><br>${escapeHtml(track[mode])}</div>`;
+  return `<div class="card">
+    <div class="taskTop"><div class="pill">留学能力线 · 每日</div><div class="tiny">${mode === "full" ? "完整" : mode === "standard" ? "标准" : mode === "support" ? "保底" : "最低"}</div></div>
+    <h2>英语优先，每天不断线</h2>
+    <p>RAZ、自然拼读、朗文、哈利波特每天都进计划；状态差就变成微任务，不取消。</p>
+    ${compact ? englishTracks.slice(0, 2).map(renderTrack).join("") : englishTracks.map(renderTrack).join("")}
+    <div class="note blue">数学辅助：${escapeHtml(mathTracks[0][mode])}</div>
+  </div>`;
 }
 
 function todaySchedule() {
@@ -290,6 +313,7 @@ function companionContext() {
     weather: state.weather,
     loadProfile: todayLoadProfile().name,
     weeklySchedule: todaySchedule(),
+    dailyResourceTracks,
     doneTasks,
     focusNotes,
     latestFeedback: latestFeedback ? `${teacherSubjects[latestFeedback.subject]?.name || "练习"} ${latestFeedback.focus}，下次${latestFeedback.nextAction || "继续练"}` : "",
@@ -454,6 +478,7 @@ const renderers = {
       </div>
       ${scheduleCard()}
       ${loadPlanCard()}
+      ${resourcePlanCard(true)}
       ${reviewPlanCard(true)}
       <div class="card">
         <h2>今日任务会随状态变化</h2>
@@ -469,7 +494,7 @@ const renderers = {
     const required = requiredTasks();
     const optional = optionalTasks();
     const paused = pausedTasks();
-    return `${reviewPlanCard()}${scheduleCard()}${loadPlanCard()}<div class="card"><h2>今天照这个节奏</h2>${todayLoadProfile().template.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
+    return `${reviewPlanCard()}${scheduleCard()}${loadPlanCard()}${resourcePlanCard()}<div class="card"><h2>今天照这个节奏</h2>${todayLoadProfile().template.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
       <div class="grid2">${required.map((task) => taskCard(task)).join("")}</div>
       ${optional.length ? `<div class="card"><h2>可选小动作</h2><p>做完必做还有余力，再选这里。没做也不算失败。</p></div><div class="grid2">${optional.map((task) => taskCard(task)).join("")}</div>` : ""}
       ${paused.length ? `<div class="card"><h2>今日暂停</h2>${paused.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b><br>${escapeHtml(taskLoadTarget(task))}</div>`).join("")}</div>` : ""}`;

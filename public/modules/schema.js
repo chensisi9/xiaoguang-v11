@@ -107,6 +107,59 @@ export const finalReviewPlan = {
   }
 };
 
+export const dailyResourceTracks = [
+  {
+    id: "raz",
+    subject: "英语",
+    title: "RAZ 分级阅读",
+    purpose: "留学阅读 stamina，每天保留一点可持续阅读输入。",
+    full: "10-15分钟：听读1本，口头复述3句：人物/地点/发生了什么。",
+    standard: "8-10分钟：听读1本或半本，复述2句。",
+    support: "5分钟：只听读2页，选1个新词说中文意思。",
+    minimum: "2分钟：只听1页或看1页，说出1个认识的词。"
+  },
+  {
+    id: "phonics",
+    subject: "英语",
+    title: "自然拼读课",
+    purpose: "补英文解码能力，让看词、读音、拼写连起来。",
+    full: "8分钟：复习1个拼读规则，读5个词，造1个短句。",
+    standard: "5分钟：读3个词，找出共同音。",
+    support: "3分钟：只读2个词，听清一个音。",
+    minimum: "1分钟：跟读1个词，指出开头音。"
+  },
+  {
+    id: "longman",
+    subject: "英语",
+    title: "朗文课本 1A-6B",
+    purpose: "长期句型复现，把基础句子说稳。",
+    full: "10分钟：选1页，读核心句型，再替换人物/地点说3句。",
+    standard: "6分钟：读1个句型，替换说2句。",
+    support: "3分钟：只读1个句型，替换1个词。",
+    minimum: "1分钟：只跟读1句。"
+  },
+  {
+    id: "harry",
+    subject: "英语",
+    title: "英文哈利波特原著阅读课",
+    purpose: "高兴趣原著输入，保持英文阅读愿望，不考试化。",
+    full: "10分钟：听读一小段，中文说情节，再挑1个英文短语。",
+    standard: "6分钟：听读一小段，只说谁做了什么。",
+    support: "3分钟：只听一小段，抓1个人名或物品词。",
+    minimum: "1分钟：只听30秒，保留兴趣不断线。"
+  },
+  {
+    id: "khan",
+    subject: "数学",
+    title: "可汗学院数学",
+    purpose: "数学查漏工具，用来解释卡点，不替代人教四下。",
+    full: "10分钟：看1个卡点讲解，做3道同类题。",
+    standard: "6分钟：看1个短讲解，做1道同类题。",
+    support: "3分钟：只看一个概念解释，说出卡点。",
+    minimum: "1分钟：只标记今天卡住的数学点。"
+  }
+];
+
 export const weeklySchedule = {
   0: {
     day: "周日",
