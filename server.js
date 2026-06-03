@@ -75,6 +75,7 @@ function buildCompanionMessages(message, context, recentMessages) {
   ].join("\n");
 
   const contextLine = `今天状态：${context.weather || "未选择"}。已完成：${(context.doneTasks || []).join("、") || "还没有"}。最近只改点：${(context.focusNotes || []).join("；") || "暂无"}。最近老师反馈：${context.latestFeedback || "暂无"}。`;
+  const loadLine = `今天任务负荷：${context.loadProfile || "标准短版"}。如果状态是有点累或不想学，必须降低题量，只保留必做或最低启动，不要继续建议完整五项。`;
   const profileLine = `八宝长期画像：优势=${(profile.strengths || []).join("、") || "表达和运动"}；兴趣=${(profile.interests || []).join("、") || "网球和策略游戏"}；近期真实场景=${(profile.upcomingScenes || []).join("、") || "网球营、新家、桃树观察"}；学习路径=${(profile.englishPath || []).join(" -> ") || "3句输出 -> because -> 观点句"}；互动机制=${(profile.interactionMechanisms || []).join("、") || "A/B选择、找茬、场景化"}；低能量版本=${(profile.lowEnergyVersions || []).join("；") || "降低任务但保护连续性"}。`;
   const reviewPlan = context.finalReviewPlan || {};
   const reviewLine = `期末复习计划：${reviewPlan.title || "6月期末最后一个月复习"}；主线资料=${(reviewPlan.sources || []).join("、") || "人教四下数学、人教四下语文、精通四下英语"}；辅助资源=${(reviewPlan.supportingResources || []).join("、") || "RAZ、可汗数学、自然拼读、英文哈利波特原著阅读课、朗文"}；原则=${reviewPlan.principle || "主科优先、短回合、每天留痕"}；周计划=${(reviewPlan.weeks || [])
@@ -89,6 +90,7 @@ function buildCompanionMessages(message, context, recentMessages) {
   return [
     { role: "system", content: system },
     { role: "system", content: contextLine },
+    { role: "system", content: loadLine },
     { role: "system", content: profileLine },
     { role: "system", content: reviewLine },
     { role: "system", content: materialLine },

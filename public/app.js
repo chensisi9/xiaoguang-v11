@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260603-dabai";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY } from "./modules/schema.js?v=20260603-adaptive-load";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260603-dabai";
+} from "./modules/state.js?v=20260603-adaptive-load";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -24,6 +24,91 @@ const todayTitle = document.getElementById("todayTitle");
 let audio = null;
 let recognition = null;
 let continuousCompanion = false;
+
+const loadProfiles = {
+  "很好": {
+    name: "完整训练版",
+    summary: "今天状态在线，可以做完整五项，但每项仍然只改一个点。",
+    required: ["math", "english", "chinese", "harmonica", "tennis"],
+    optional: [],
+    paused: [],
+    template: [
+      "数学 25分钟：人教四下 12道计算/简算 + 3道图形/统计/应用题，记录1个错因。",
+      "语文 25分钟：人教四下 1个课内点 + 1段阅读 + 1句写具体。",
+      "英语 20分钟：精通四下听读 + 4组课本问答 + 3句输出。",
+      "英语能力线 10分钟：RAZ/自然拼读/哈利波特三选一。",
+      "可汗数学 10分钟：只补一个数学卡点。",
+      "口琴 8分钟，网球 15分钟。"
+    ],
+    targets: {
+      math: "完整版：12道小数/简算 + 3道三角形/统计/应用题。记录1个错因。",
+      english: "完整版：精通四下听读1段 + 4组课本问答 + 3句输出。",
+      chinese: "完整版：人教四下1个课内点 + 1段阅读 + 1句写具体。",
+      harmonica: "完整版：8分钟，最乱4-8小节慢速三遍。",
+      tennis: "完整版：15分钟，只练小垫步或击球点。"
+    }
+  },
+  "还行": {
+    name: "标准短版",
+    summary: "今天不堆量，三科保留，口琴和网球缩短。",
+    required: ["math", "english", "chinese", "harmonica", "tennis"],
+    optional: [],
+    paused: [],
+    template: [
+      "数学 20分钟：人教四下 10道计算/简算 + 2道图形/统计/应用题。",
+      "语文 20分钟：人教四下 1个课内点 + 1段阅读。",
+      "英语 15分钟：精通四下听读 + 3组课本问答 + 3句输出。",
+      "英语能力线 5分钟：只选 RAZ/自然拼读/哈利波特一个。",
+      "口琴 5分钟，网球 10分钟。"
+    ],
+    targets: {
+      math: "短版：10道小数/简算 + 2道三角形/统计/应用题。只抓1个错因。",
+      english: "短版：精通四下听读1段 + 3组课本问答 + 3句输出。",
+      chinese: "短版：人教四下1个课内点 + 1段阅读，只留1句表达。",
+      harmonica: "短版：5分钟，只练一个小节不乱。",
+      tennis: "短版：10分钟，只练一个动作点。"
+    }
+  },
+  "有点累": {
+    name: "三科保底版",
+    summary: "今天保护精力，只保留数学、语文、英语。口琴和网球变成可选小动作。",
+    required: ["math", "english", "chinese"],
+    optional: ["harmonica", "tennis"],
+    paused: [],
+    template: [
+      "数学 12分钟：人教四下 6道计算/简算，只圈关键词和错因。",
+      "语文 12分钟：人教四下 1个课内点，只说清楚画面或中心。",
+      "英语 10分钟：精通四下听读 + 2组问答，只改1个易混点。",
+      "可选：口琴3分钟或网球5分钟，二选一即可。"
+    ],
+    targets: {
+      math: "保底版：6道小数/简算，只抓关键词和1个错因。",
+      english: "保底版：精通四下听读1小段 + 2组课本问答。",
+      chinese: "保底版：人教四下1个课内点，只说画面/中心，不大段写。",
+      harmonica: "可选：3分钟，只吹最熟的一小段。",
+      tennis: "可选：5分钟，只做挥拍或小垫步。"
+    }
+  },
+  "不想学": {
+    name: "最低启动版",
+    summary: "今天目标不是完成全部，是打破不开局。只做一个最小学习动作。",
+    required: ["math"],
+    optional: ["english", "chinese"],
+    paused: ["harmonica", "tennis"],
+    template: [
+      "必做 5分钟：数学只做3道最基础的人教四下题，圈关键词。",
+      "可选 3分钟：英语只说1句精通四下句子，或语文只说1个课内画面。",
+      "口琴和网球今天暂停，不补债。"
+    ],
+    targets: {
+      math: "最低版：只做3道基础题，圈关键词，完成就算赢。",
+      english: "可选：只说1句精通四下句子。",
+      chinese: "可选：只说1个课内画面或1个关键词。",
+      harmonica: "今日暂停：不补债。",
+      tennis: "今日暂停：不补债。"
+    }
+  }
+};
 
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
@@ -50,7 +135,37 @@ function renderPage(page) {
 }
 
 function taskDoneCount() {
-  return state.tasks.filter((task) => state.done?.[`task_${task.id}`]).length;
+  return requiredTasks().filter((task) => state.done?.[`task_${task.id}`]).length;
+}
+
+function todayLoadProfile() {
+  return loadProfiles[state.weather] || loadProfiles["还行"];
+}
+
+function taskLoadStatus(task) {
+  const profile = todayLoadProfile();
+  if (profile.required.includes(task.id)) return "必做";
+  if (profile.optional.includes(task.id)) return "可选";
+  return "暂停";
+}
+
+function taskLoadTarget(task) {
+  return todayLoadProfile().targets?.[task.id] || task.target;
+}
+
+function requiredTasks() {
+  const profile = todayLoadProfile();
+  return state.tasks.filter((task) => profile.required.includes(task.id));
+}
+
+function optionalTasks() {
+  const profile = todayLoadProfile();
+  return state.tasks.filter((task) => profile.optional.includes(task.id));
+}
+
+function pausedTasks() {
+  const profile = todayLoadProfile();
+  return state.tasks.filter((task) => profile.paused.includes(task.id));
 }
 
 function pickLine(group) {
@@ -69,7 +184,9 @@ function companionTodayLine() {
 function taskCompanionHint(task) {
   const note = state.dailyNotes?.[task.id]?.focus;
   if (note) return `大白记得：${task.title} 今天只改“${escapeHtml(note)}”。`;
-  return `大白陪你把 ${task.title} 变小：先练 5 分钟，只改一个点。`;
+  const status = taskLoadStatus(task);
+  if (status === "暂停") return "今天这项暂停，不补债。先保护启动感。";
+  return `大白陪你把 ${task.title} 变小：今天是${todayLoadProfile().name}，这项是${status}。`;
 }
 
 function bedtimeSummary() {
@@ -96,6 +213,7 @@ function companionContext() {
   const latestFeedback = state.teacherFeedback[0];
   return {
     weather: state.weather,
+    loadProfile: todayLoadProfile().name,
     doneTasks,
     focusNotes,
     latestFeedback: latestFeedback ? `${teacherSubjects[latestFeedback.subject]?.name || "练习"} ${latestFeedback.focus}，下次${latestFeedback.nextAction || "继续练"}` : "",
@@ -158,18 +276,31 @@ function noteField(task, key, placeholder) {
 
 function taskCard(task, compact = false) {
   const done = state.done?.[`task_${task.id}`];
+  const status = taskLoadStatus(task);
+  const paused = status === "暂停";
   return `<div class="card task ${done ? "done" : ""}">
-    <div class="taskTop"><div class="icon">${task.icon}</div><div class="pill">${task.type}</div></div>
+    <div class="taskTop"><div class="icon">${task.icon}</div><div class="pill">${task.type} · ${status}</div></div>
     <h2>${task.title}</h2>
     <p>${task.detail}</p>
     <div class="note green">${taskCompanionHint(task)}</div>
-    <div class="note blue">${task.target}</div>
-    ${compact ? "" : `<label>今天实际练了什么</label>${noteField(task, "today", "例如：20 道计算题 / 朗读第 3 段 / 第 4-8 小节")}` }
-    ${compact ? "" : `<label>今天只改一个点</label>${noteField(task, "focus", "例如：计算前先圈关键词 / 换孔慢半拍 / 击球点靠前")}` }
-    <div class="ladder" data-task="${task.id}">
+    <div class="note blue">${escapeHtml(taskLoadTarget(task))}</div>
+    ${paused ? "" : compact ? "" : `<label>今天实际练了什么</label>${noteField(task, "today", "例如：6 道计算题 / 朗读第 3 段 / 第 4-8 小节")}` }
+    ${paused ? "" : compact ? "" : `<label>今天只改一个点</label>${noteField(task, "focus", "例如：计算前先圈关键词 / 换孔慢半拍 / 击球点靠前")}` }
+    ${paused ? "" : `<div class="ladder" data-task="${task.id}">
       ${["P 看过", "A 练过", "C 讲清楚", "I 得到反馈"].map((item) => `<button class="${task.icap === item[0] ? "active" : ""}" data-icap="${item[0]}">${item}</button>`).join("")}
     </div>
-    <button class="primary ${done ? "done" : ""}" data-done="task_${task.id}">${done ? "已完成" : "完成这一项"}</button>
+    <button class="primary ${done ? "done" : ""}" data-done="task_${task.id}">${done ? "已完成" : status === "可选" ? "完成可选项" : "完成这一项"}</button>`}
+  </div>`;
+}
+
+function loadPlanCard() {
+  const profile = todayLoadProfile();
+  return `<div class="card">
+    <h2>今日负荷：${escapeHtml(profile.name)}</h2>
+    <div class="quote">${escapeHtml(profile.summary)}</div>
+    <div class="history"><b>必做：</b>${requiredTasks().map((task) => `${task.icon} ${task.title}`).join("、") || "无"}</div>
+    ${optionalTasks().length ? `<div class="history"><b>可选：</b>${optionalTasks().map((task) => `${task.icon} ${task.title}`).join("、")}</div>` : ""}
+    ${pausedTasks().length ? `<div class="history"><b>暂停：</b>${pausedTasks().map((task) => `${task.icon} ${task.title}`).join("、")}。今天不补债。</div>` : ""}
   </div>`;
 }
 
@@ -225,16 +356,23 @@ const renderers = {
         <button class="primary secondary" id="saveCompanionMoment">让大白记住</button>
         <button class="primary secondary" id="quietBtn">${state.companion?.quietMode ? "退出少说" : "少说陪伴"}</button>
       </div>
+      ${loadPlanCard()}
       ${reviewPlanCard(true)}
       <div class="card">
-        <h2>今日五项</h2>
-        ${state.tasks.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b> · ${state.done?.[`task_${task.id}`] ? "已完成" : "未完成"}<br><span class="tiny">${escapeHtml(task.target)}</span></div>`).join("")}
+        <h2>今日任务会随状态变化</h2>
+        ${state.tasks.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b> · ${taskLoadStatus(task)} · ${state.done?.[`task_${task.id}`] ? "已完成" : "未完成"}<br><span class="tiny">${escapeHtml(taskLoadTarget(task))}</span></div>`).join("")}
         <button class="primary" data-jump="daily">开始每日任务</button>
       </div>
     </div>`;
   },
   daily() {
-    return `${reviewPlanCard()}<div class="card"><h2>今天照这个节奏</h2>${finalReviewPlan.dailyTemplate.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div><div class="grid2">${state.tasks.map((task) => taskCard(task)).join("")}</div>`;
+    const required = requiredTasks();
+    const optional = optionalTasks();
+    const paused = pausedTasks();
+    return `${reviewPlanCard()}${loadPlanCard()}<div class="card"><h2>今天照这个节奏</h2>${todayLoadProfile().template.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
+      <div class="grid2">${required.map((task) => taskCard(task)).join("")}</div>
+      ${optional.length ? `<div class="card"><h2>可选小动作</h2><p>做完必做还有余力，再选这里。没做也不算失败。</p></div><div class="grid2">${optional.map((task) => taskCard(task)).join("")}</div>` : ""}
+      ${paused.length ? `<div class="card"><h2>今日暂停</h2>${paused.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b><br>${escapeHtml(taskLoadTarget(task))}</div>`).join("")}</div>` : ""}`;
   },
   materials() {
     const mainMaterials = studyMaterials.filter((item) => ["pep-math-4b", "pep-chinese-4b", "jing-tong-english-4b"].includes(item.id));
@@ -490,11 +628,12 @@ function startCompanionVoiceInput() {
 }
 
 function renderProgress() {
-  const count = progressCount();
-  const percent = Math.min(100, Math.round((count / progressKeys.length) * 100));
+  const count = taskDoneCount();
+  const total = requiredTasks().length || 1;
+  const percent = Math.min(100, Math.round((count / total) * 100));
   progressNum.textContent = `${percent}%`;
   bar.style.width = `${percent}%`;
-  progressText.textContent = count ? `今天完成 ${count}/${progressKeys.length} 项每日练习。` : "今天先完成一项就很好。";
+  progressText.textContent = count ? `今天完成 ${count}/${total} 项必做练习。` : `${todayLoadProfile().name}：先完成一项就很好。`;
 }
 
 function pageText() {
