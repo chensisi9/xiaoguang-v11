@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-learning-loop-2";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-voice-coach";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260610-learning-loop-2";
+} from "./modules/state.js?v=20260610-voice-coach";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -114,6 +114,10 @@ function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
 }
 
+function safeId(value) {
+  return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
 const icapSteps = [
   ["P", "P 看过"],
   ["A", "A 练过"],
@@ -151,26 +155,34 @@ function buildTaskFeedback(task, note = {}) {
   const answer = String(note.answer || "").trim();
   const explain = String(note.explain || "").trim();
   const subject = task?.id || "";
+  const combined = `${answer} ${explain}`;
+  const hasNumber = /[0-9０-９一二三四五六七八九十]/.test(combined);
+  const hasEnglish = /[a-z]/i.test(combined);
+  const mentionsBecause = /\bbecause\b|因为|所以/.test(combined);
+  const mentionsWhereWhen = /where|when|哪里|地点|时间|什么时候/i.test(combined);
   if (!answer && !explain) return "先留下一点输出，大白才能给你互动反馈。最低版本：写一个答案，或者说一句“我是这样想的”。";
   const hasExplain = explain.length >= 8;
+  const observed = hasExplain ? "我看见八宝已经完成了“做出来 + 讲思路”，这比只写答案更像真正训练" : "我看见八宝已经把输出留下来了，现在还差一句思路";
   if (subject === "math") {
-    return hasExplain
-      ? "大白反馈：你已经不只是做题，而是在讲思路了。下一步只抓一个点：算完后用估算检查答案是不是离谱。"
-      : "大白反馈：答案已经留下来了。下一步补一句思路：你先算了什么？为什么这样列式？";
+    const precise = !hasNumber ? "补上一个关键数字或单位，让答案能被检查" : hasExplain ? "算完后用估算或单位回看一次，抓粗心陷阱" : "补一句：第一步为什么这样列式";
+    return `大白反馈：${observed}。精确改一点：${precise}。下一回合只问自己一句：这个结果大概合理吗？`;
   }
   if (subject === "english") {
-    return hasExplain
-      ? "大白反馈：你完成了英文输出和自我解释。下一步只改一个点：句首大写、标点、the/they/their 或 where/when 里选一个。"
-      : "大白反馈：你已经开口/写出来了。下一步用中文讲一下这句英文是什么意思，再把一个词换成自己的内容。";
+    const precise = !hasEnglish
+      ? "先补一句最短英文，不追求长，主语 + 动作就可以"
+      : mentionsWhereWhen
+        ? "把 where 当地点、when 当时间，再各造一句武汉网球营句子"
+        : mentionsBecause
+          ? "because 后面只接一个清楚理由，不要一口气接太长"
+          : "只查一个点：句首大写、句末标点、the/they/their 三选一";
+    return `大白反馈：${observed}。精确改一点：${precise}。下一回合用自己的内容再说一遍，不背模板。`;
   }
   if (subject === "chinese") {
-    return hasExplain
-      ? "大白反馈：你能把画面或中心讲出来了。下一步让句子更具体：补一个颜色、动作或感受。"
-      : "大白反馈：已经有输出。下一步别写长，先说清楚：画面里有什么？人物或作者的心情是什么？";
+    const precise = /画面|颜色|动作|心情|作者|人物/.test(combined) ? "保留这个画面，再补一个动作或感受" : "先说清楚画面里有什么，再说作者心情";
+    return `大白反馈：${observed}。精确改一点：${precise}。下一回合不用长，先把一句话变具体。`;
   }
-  return hasExplain
-    ? "大白反馈：你已经练过，也能讲清楚一个动作点。下一步只保留一个改进点，明天继续。"
-    : "大白反馈：练习有记录了。下一步补一句你刚才怎么做的，或者哪里最容易乱。";
+  const precise = hasExplain ? "把动作点缩成一个词，明天直接复用" : "补一句刚才哪里最容易乱，或者哪个动作最顺";
+  return `大白反馈：${observed}。精确改一点：${precise}。下一回合只保留一个动作，不加量。`;
 }
 
 function initNav() {
@@ -235,7 +247,8 @@ function resourcePlanCard(compact = false) {
   const mathTracks = dailyResourceTracks.filter((track) => track.subject === "数学");
   const renderTrack = (track) => {
     const value = state.dailyNotes?.resources?.[track.id]?.output || "";
-    return `<div class="history"><b>${escapeHtml(track.title)}</b><br><span class="tiny">${escapeHtml(track.purpose)}</span><br>${escapeHtml(track[mode])}${compact ? "" : `<label>今日输出</label><textarea data-resource-track="${track.id}" placeholder="留下今天的输出：读了哪一页？说了哪一句？卡在哪个词？">${escapeHtml(value)}</textarea>`}</div>`;
+    const id = `resource-${safeId(track.id)}-output`;
+    return `<div class="history resourceTrack"><b>${escapeHtml(track.title)}</b><br><span class="tiny">${escapeHtml(track.purpose)}</span><br>${escapeHtml(track[mode])}${compact ? "" : `<label for="${id}">今日输出</label><div class="fieldWithVoice"><textarea id="${id}" data-resource-track="${track.id}" placeholder="可以直接说：读了哪一页？说了哪一句？卡在哪个词？">${escapeHtml(value)}</textarea><button type="button" class="voiceMini" data-voice-target="${id}" title="语音输入">🎙 说</button></div>`}</div>`;
   };
   return `<div class="card">
     <div class="taskTop"><div class="pill">留学能力线 · 每日</div><div class="tiny">${mode === "full" ? "完整" : mode === "standard" ? "标准" : mode === "support" ? "保底" : "最低"}</div></div>
@@ -432,9 +445,10 @@ function choiceButtons(field, options) {
     .join("");
 }
 
-function noteField(task, key, placeholder) {
+function noteField(task, key, label, placeholder) {
   const value = state.dailyNotes?.[task.id]?.[key] || "";
-  return `<textarea data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>`;
+  const id = `daily-${safeId(task.id)}-${safeId(key)}`;
+  return `<label for="${id}">${escapeHtml(label)}</label><div class="fieldWithVoice"><textarea id="${id}" data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea><button type="button" class="voiceMini" data-voice-target="${id}" title="语音输入">🎙 说</button></div>`;
 }
 
 function taskCard(task, compact = false) {
@@ -446,22 +460,32 @@ function taskCard(task, compact = false) {
   return `<div class="card task ${done ? "done" : ""}">
     <div class="taskTop"><div class="icon">${task.icon}</div><div class="pill">${task.type} · ${status}</div></div>
     <h2>${task.title}</h2>
-    <p>${task.detail}</p>
-    <div class="note green">${taskCompanionHint(task)}</div>
-    <div class="note blue">${escapeHtml(taskLoadTarget(task))}</div>
-    ${examples.length ? `<div class="exampleBox">
-      <h3>今天直接做</h3>
-      ${examples.map((example, index) => `<div class="history">
-        <b>${index + 1}. ${escapeHtml(example.point)}</b><br>
-        ${escapeHtml(example.prompt)}
-        <details><summary>提示 / 答案</summary><div class="tiny">${escapeHtml(example.hint)}<br><b>参考：</b>${escapeHtml(example.answer)}</div></details>
-      </div>`).join("")}
-    </div>` : ""}
-    ${paused ? "" : compact ? "" : `<label>八宝的答案 / 输出</label>${noteField(task, "answer", "写答案、英文句子、语文句子，或者记录口头说出的内容")}
-    <label>我自己讲清楚</label>${noteField(task, "explain", "用自己的话讲：我怎么想的？哪里容易错？下一次只改哪一点？")}
-    <label>今天实际练了什么</label>${noteField(task, "today", "例如：6 道计算题 / 朗读第 3 段 / 第 4-8 小节")}
-    <label>今天只改一个点</label>${noteField(task, "focus", "例如：计算前先圈关键词 / 换孔慢半拍 / 击球点靠前")}
-    ${note.feedback ? `<div class="note green"><b>大白互动反馈</b><br>${escapeHtml(note.feedback)}</div>` : `<div class="note blue"><b>大白互动反馈</b><br>写下答案和讲解后，点“I 得到反馈”，大白会根据八宝的输出给下一步。</div>`}` }
+    <div class="coachGrid">
+      <div class="coachInput">
+        <div class="laneTitle">左边 · 今天练什么</div>
+        <p>${task.detail}</p>
+        <div class="note green">${taskCompanionHint(task)}</div>
+        <div class="note blue">${escapeHtml(taskLoadTarget(task))}</div>
+        ${examples.length ? `<div class="exampleBox">
+          <h3>今天直接做</h3>
+          ${examples.map((example, index) => `<div class="history">
+            <b>${index + 1}. ${escapeHtml(example.point)}</b><br>
+            ${escapeHtml(example.prompt)}
+            <details><summary>提示 / 答案</summary><div class="tiny">${escapeHtml(example.hint)}<br><b>参考：</b>${escapeHtml(example.answer)}</div></details>
+          </div>`).join("")}
+        </div>` : ""}
+      </div>
+      <div class="coachOutput">
+        <div class="laneTitle">右边 · 八宝输出和反馈</div>
+        ${paused || compact ? "" : `${noteField(task, "answer", "八宝的答案 / 输出", "可以直接说：答案、英文句子、语文句子，或者口头练习内容")}
+        ${noteField(task, "explain", "我自己讲清楚", "可以直接说：我怎么想的？哪里容易错？下一次只改哪一点？")}
+        <div class="miniGrid">
+          <div>${noteField(task, "today", "今天实际练了什么", "例如：6道计算题 / 朗读第3段 / 第4-8小节")}</div>
+          <div>${noteField(task, "focus", "今天只改一个点", "例如：圈关键词 / 换孔慢半拍 / 击球点靠前")}</div>
+        </div>
+        ${note.feedback ? `<div class="note green"><b>大白互动反馈</b><br>${escapeHtml(note.feedback)}</div>` : `<div class="note blue"><b>大白互动反馈</b><br>说出或写下答案，再点“I 得到反馈”。大白只改一个精确点，不会一口气检查全部。</div>`}` }
+      </div>
+    </div>
     ${paused ? "" : `<div class="ladder" data-task="${task.id}">
       ${icapSteps.map(([key, label]) => `<button class="${stageDone(task, key) ? "active" : ""}" data-icap="${key}">${label}</button>`).join("")}
     </div>
@@ -562,8 +586,8 @@ const renderers = {
     const optional = optionalTasks();
     const paused = pausedTasks();
     return `${reviewPlanCard()}${scheduleCard()}${loadPlanCard()}${resourcePlanCard()}<div class="card"><h2>今天照这个节奏</h2>${todayLoadProfile().template.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
-      <div class="grid2">${required.map((task) => taskCard(task)).join("")}</div>
-      ${optional.length ? `<div class="card"><h2>可选小动作</h2><p>做完必做还有余力，再选这里。没做也不算失败。</p></div><div class="grid2">${optional.map((task) => taskCard(task)).join("")}</div>` : ""}
+      <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
+      ${optional.length ? `<div class="card"><h2>可选小动作</h2><p>做完必做还有余力，再选这里。没做也不算失败。</p></div><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div>` : ""}
       ${paused.length ? `<div class="card"><h2>今日暂停</h2>${paused.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b><br>${escapeHtml(taskLoadTarget(task))}</div>`).join("")}</div>` : ""}`;
   },
   materials() {
@@ -710,6 +734,9 @@ function bindAll() {
       save();
     };
   });
+  document.querySelectorAll("[data-voice-target]").forEach((button) => {
+    button.onclick = () => startVoiceToField(button.dataset.voiceTarget, button);
+  });
   document.querySelectorAll("textarea[data-group]").forEach((input) => {
     input.oninput = () => {
       state[input.dataset.group] = state[input.dataset.group] || {};
@@ -836,6 +863,41 @@ function startCompanionVoiceInput() {
   };
   recognition.onend = () => {
     if (status && !input.value) status.textContent = "点“开始说话”，说完后大白会自动回答。";
+  };
+  recognition.start();
+}
+
+function startVoiceToField(targetId, button) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const input = document.getElementById(targetId);
+  if (!SpeechRecognition || !input) {
+    alert("这个浏览器暂时不支持语音识别，可以换 Chrome/Safari，或者先用文字。");
+    return;
+  }
+  if (recognition) recognition.stop();
+  recognition = new SpeechRecognition();
+  recognition.lang = "zh-CN";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  const originalText = button?.textContent || "🎙 说";
+  if (button) {
+    button.textContent = "听...";
+    button.classList.add("active");
+  }
+  input.focus();
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    input.value = `${input.value.trim()}${input.value.trim() ? "\n" : ""}${transcript}`;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+  recognition.onerror = () => {
+    if (button) button.textContent = "再说";
+  };
+  recognition.onend = () => {
+    if (button) {
+      button.textContent = originalText;
+      button.classList.remove("active");
+    }
   };
   recognition.start();
 }

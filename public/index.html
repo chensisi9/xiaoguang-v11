@@ -69,7 +69,19 @@ label{font-size:13px;color:#dffcff}
 .footer{border-radius:8px;color:#9fb4bd}
 details{margin-top:8px}
 summary{cursor:pointer;color:#8cff6a;font-weight:900}
+.taskList{display:grid;grid-template-columns:1fr;gap:10px}
+.coachGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.92fr);gap:12px;margin-top:10px}
+.coachInput,.coachOutput{min-width:0}
+.laneTitle{display:inline-flex;align-items:center;border:1px solid rgba(111,231,255,.24);background:rgba(56,232,255,.08);color:#c8fbff;border-radius:5px;padding:5px 8px;font-size:12px;font-weight:950;margin-bottom:8px}
+.fieldWithVoice{display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:8px;align-items:stretch}
+.fieldWithVoice textarea{margin-top:6px;margin-bottom:8px;min-height:76px}
+.voiceMini{height:42px;margin-top:6px;border-radius:6px;border:1px solid rgba(111,231,255,.28);background:rgba(255,255,255,.06);color:#dffcff;font-weight:950;cursor:pointer}
+.voiceMini.active{background:#dffcff;color:#061014}
+.miniGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.miniGrid textarea{min-height:62px}
+.resourceTrack .fieldWithVoice textarea{min-height:64px}
 @media(max-width:920px){.app{padding:10px}.hero{grid-template-columns:1fr}.nav{grid-template-columns:repeat(2,1fr)}h1{font-size:26px}.card{padding:13px}.voiceBox{grid-template-columns:1fr}}
+@media(max-width:920px){.coachGrid,.miniGrid{grid-template-columns:1fr}.fieldWithVoice{grid-template-columns:minmax(0,1fr) 54px}}
 </style>
 </head>
 <body>
@@ -89,6 +101,6 @@ summary{cursor:pointer;color:#8cff6a;font-weight:900}
 <main id="pages"></main>
 <footer class="footer"><div>原则：每日少一点，动作准一点，记录留一点。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260610-learning-loop-2"></script>
+<script type="module" src="./app.js?v=20260610-voice-coach"></script>
 </body>
 </html>
