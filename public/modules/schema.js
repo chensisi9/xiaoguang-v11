@@ -582,6 +582,20 @@ export function createInitialState() {
       lastSpokenAt: "",
       quietMode: false
     },
+    profile: {
+      childName: "八宝",
+      interests: ["网球", "哈利波特", "科学", "策略游戏"],
+      goals: ["未来出国", "英语自然表达", "数学稳定审题"],
+      habits: ["喜欢当小教练", "吃软不吃硬", "先说出来更容易开始"],
+      recent: ["数学状态不错"]
+    },
+    dabai: {
+      name: "大白",
+      onlineSince: TODAY,
+      mood: "",
+      lastGreetingDate: ""
+    },
+    activeModule: "",
     voyage: {
       count: 0,
       lastKeptDate: "",

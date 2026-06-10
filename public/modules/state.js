@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-companion-room";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-dabai-home";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -23,6 +23,8 @@ function normalizeState(raw) {
       battleReports: raw.battleReports || [],
       badges: raw.badges || { earned: [], today: [] },
       exploration: raw.exploration || { englishTasks: 0 },
+      profile: raw.profile || createInitialState().profile,
+      dabai: raw.dabai || createInitialState().dabai,
       companion: {
         moments: raw.companion?.moments || [],
         conversation: raw.companion?.conversation || [],
@@ -53,6 +55,9 @@ function normalizeState(raw) {
     badges: raw.badges || { earned: [], today: [] },
     exploration: raw.exploration || { englishTasks: 0 },
     feedbackBubble: raw.feedbackBubble || null,
+    profile: raw.profile || createInitialState().profile,
+    dabai: raw.dabai || createInitialState().dabai,
+    activeModule: raw.activeModule || "",
     teacherFeedback: raw.teacherFeedback || [],
     dadNotes: raw.dadNotes || [],
     companion: {
@@ -147,6 +152,9 @@ export function snapshotToday() {
     battleReports: state.battleReports,
     badges: state.badges,
     exploration: state.exploration,
+    profile: state.profile,
+    dabai: state.dabai,
+    activeModule: state.activeModule,
     teacherFeedback: state.teacherFeedback,
     dadNotes: state.dadNotes,
     companion: state.companion

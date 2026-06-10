@@ -104,6 +104,20 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .focusCard{padding:18px}
 .focusTop{display:grid;grid-template-columns:1fr 270px;gap:12px;align-items:stretch}
 .focusCard h2,.sectionTitle h2{font-size:24px;margin:8px 0;color:#f7fbff}
+.companionHome h2{font-size:28px}
+.dabaiLine{font-size:18px;color:#d8f6ff;line-height:1.6;margin:8px 0}
+.memoryLine{margin:10px 0;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(116,204,255,.16);color:#ffcf7a;line-height:1.5}
+.dabaiStatusGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.dabaiStatusGrid div{border-radius:8px;background:rgba(76,201,255,.07);border:1px solid rgba(76,201,255,.18);padding:9px}
+.dabaiStatusGrid b{display:block;color:#9fb4c8;font-size:12px}
+.dabaiStatusGrid span{display:block;color:#eef7ff;margin-top:4px;font-size:14px;line-height:1.35}
+.moduleQuestion{margin:14px 0 8px;color:#f7fbff;font-size:18px}
+.moduleGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.moduleButton{border-radius:8px;border:1px solid rgba(116,204,255,.2);background:rgba(255,255,255,.045);color:#eef7ff;padding:11px 9px;text-align:left;cursor:pointer}
+.moduleButton.active{background:rgba(76,201,255,.15);border-color:#4cc9ff}
+.moduleButton span{display:block;font-size:22px}
+.moduleButton b{display:block;margin-top:5px}
+.moduleButton small{display:block;margin-top:4px;color:#9fb4c8;line-height:1.35}
 .rewardPanel{background:rgba(255,184,77,.1);border:1px solid rgba(255,184,77,.32);border-radius:8px;padding:13px;display:flex;flex-direction:column;justify-content:space-between}
 .rewardText{font-size:15px;line-height:1.55;color:#ffe7b5;margin:8px 0}
 .rewardButton{margin-top:8px;background:linear-gradient(90deg,#ffb84d,#ffd166);color:#1a1205}
@@ -121,6 +135,15 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .choice.active{background:rgba(76,201,255,.15);border-color:#4cc9ff;color:#ffffff;box-shadow:0 0 0 1px rgba(76,201,255,.2),0 0 22px rgba(76,201,255,.1)}
 .choice .small{color:#9fb4c8}
 .sectionTitle{display:flex;justify-content:space-between;gap:10px;align-items:end;margin:8px 0 10px}
+.modulePanel{margin-top:0}
+.quietPanel p{color:#9fb4c8;line-height:1.6}
+.universeSnapshot{padding:16px}
+.universeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.miniUniverse{border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(116,204,255,.17);padding:10px;min-width:0}
+.miniUniverse b,.miniUniverse span,.miniUniverse small{display:block}
+.miniUniverse b{color:#ffcf7a}
+.miniUniverse span{color:#d8f6ff;margin-top:5px;line-height:1.4}
+.miniUniverse small{color:#9fb4c8;margin-top:5px;line-height:1.35}
 .pill{background:rgba(76,201,255,.1);border:1px solid rgba(76,201,255,.32);color:#d8f6ff;border-radius:8px}
 .task{background:rgba(9,17,31,.78);border-color:rgba(116,204,255,.2)}
 .task.done{background:rgba(18,45,42,.78);border-color:rgba(103,232,249,.28)}
@@ -156,17 +179,17 @@ textarea::placeholder,input::placeholder{color:#71869b}
 .onePointBubble{position:fixed;right:16px;bottom:205px;width:260px;z-index:21;border-radius:8px;padding:13px;background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.34);box-shadow:0 16px 45px rgba(0,0,0,.35);color:#ffe7b5}
 .onePointBubble b{display:block;color:#fff;margin-bottom:8px}
 .onePointBubble p{margin:8px 0 0;line-height:1.5;font-size:13px}
-@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid{grid-template-columns:1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
+@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid{grid-template-columns:1fr}.moduleGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="hero">
- <div><div class="tag">DABAI BATTLE ROOM</div><h1 id="todayTitle">大白</h1><p class="sub">先选今天状态，再进入一个训练回合。</p><div class="motto" id="motto">少一点，准一点，做完有反馈。</div></div>
- <div class="progress"><div class="tiny">今日必做</div><div class="progressNum" id="progressNum">0%</div><div class="bar"><div class="barin" id="bar"></div></div><div class="tiny" id="progressText">今天先完成一项就很好。</div></div>
+ <div><div class="tag">DABAI BATTLE ROOM</div><h1 id="todayTitle">大白</h1><p class="sub">先见到大白，再选择一个房间。</p><div class="motto" id="motto">今天只赢一小局，也算前进。</div></div>
+ <div class="progress"><div class="tiny">在线航线</div><div class="progressNum" id="progressNum">DABAI</div><div class="bar"><div class="barin" id="bar"></div></div><div class="tiny" id="progressText">大白在线。</div></div>
 </header>
 <section class="panel">
- <div class="row"><div class="avatar">⌁</div><div><div class="title">训练舱就绪</div><p class="sub">打开后只看状态、必做项和今天直接做的例题。</p></div></div>
+ <div class="row"><div class="avatar">⌁</div><div><div class="title">大白在线</div><p class="sub">先选一个房间。想聊、想读、想动、想学都可以。</p></div></div>
  <div class="chips"><span class="chip">数学</span><span class="chip">英语</span><span class="chip">语文</span><span class="chip">口琴</span><span class="chip">网球</span><span class="chip">老师反馈</span><span class="chip">周复盘</span></div>
 </section>
 <section class="panel">
@@ -174,8 +197,8 @@ textarea::placeholder,input::placeholder{color:#71869b}
 </section>
 <nav class="nav" id="nav"></nav>
 <main id="pages"></main>
-<footer class="footer"><div>原则：每日少一点，动作准一点，记录留一点。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
+<footer class="footer"><div>今天陪大白赢下一小局。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260610-companion-room"></script>
+<script type="module" src="./app.js?v=20260610-dabai-home"></script>
 </body>
 </html>

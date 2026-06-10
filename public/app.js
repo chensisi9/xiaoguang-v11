@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-companion-room";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-dabai-home";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260610-companion-room";
+} from "./modules/state.js?v=20260610-dabai-home";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -160,6 +160,119 @@ const exploreCountries = [
   ["美国", "🇺🇸"]
 ];
 
+const moduleLaunchers = [
+  ["learning", "📚", "学习", "去训练室赢一小局"],
+  ["explore", "🌍", "探索", "看看世界航线"],
+  ["sport", "🎾", "运动", "留下一个动作点"],
+  ["reading", "📖", "阅读", "听一页也算前进"],
+  ["chat", "💬", "聊天", "只跟大白说说话"]
+];
+
+const dabaiPromptLines = [
+  "今天不用猛冲。",
+  "先拿下一个小目标。",
+  "我在这里，不催你。",
+  "状态一般也没关系。",
+  "今天只赢一小局就够。",
+  "先说出来，后面都好改。",
+  "你最近数学讲得更清楚了。",
+  "英语先开口，不用一开始完美。",
+  "网球那种小步调整，学习也能用。",
+  "今天我们只改一个点。",
+  "如果不想开始，就先做最小版本。",
+  "我会记得你留下的小证据。",
+  "先完成，再变好。",
+  "今天可以慢一点，但不要消失。",
+  "你不是任务列表，你是在长本领。",
+  "先抓一个陷阱。",
+  "把声音说出来，大白帮你接住。",
+  "今天的目标不是多，是准。",
+  "小队长，先选一个入口。",
+  "航线亮一下就很好。",
+  "错因不是坏事，是线索。",
+  "不用证明自己很厉害，先开局。",
+  "今天适合短回合。",
+  "大白在线。",
+  "我记得你喜欢网球的硬实力。",
+  "像打一分球一样，先打这一分。",
+  "我们不刷屏，我们留痕迹。",
+  "先把想法讲给我听。",
+  "如果卡住，就换成一句话。",
+  "今天先从最容易的一项进舱。",
+  "你可以选学习，也可以先聊天。",
+  "我不会催你，但我会陪你开始。",
+  "慢一点也算在航线上。",
+  "今天不用把所有事情都解决。",
+  "一个清楚答案，比十个糊涂答案更值。",
+  "开口就是启动。",
+  "我发现你越来越会复盘了。",
+  "先让大脑热身。",
+  "我们把事情变小。",
+  "你来当小教练也可以。",
+  "大白只看今天这一小步。",
+  "先选一个房间。",
+  "不用急着赢全部。",
+  "今天可以低电量模式。",
+  "把小数点对齐，也是一种胜利。",
+  "说出三句英语，就是向未来走一步。",
+  "阅读一页，也会留下痕迹。",
+  "运动动作只改一个点。",
+  "今天的你，不需要被比较。",
+  "先和我打个招呼也可以。",
+  "我在等你重新起航。",
+  "今天适合轻装上场。",
+  "你的想法先出来，标准答案后面再说。",
+  "少一点，准一点。",
+  "世界探索从一句英语开始。",
+  "我们把今天变成一个小故事。",
+  "大白会收好你的成长记录。",
+  "你昨天留下的痕迹还在。",
+  "先拿下数学，再去挑战英语也可以。",
+  "如果想聊，我先听。",
+  "如果想动，就去运动舱。",
+  "如果想看故事，就去阅读舱。",
+  "今天不用像机器人一样学习。",
+  "像战斗教室一样，先定一个动作。",
+  "错误会告诉我们下一步。",
+  "你已经不是从零开始。",
+  "先把航线点亮。",
+  "我喜欢你认真讲思路的时候。",
+  "大白不会给你排行榜。",
+  "今天没有惩罚，只有重新起航。",
+  "先挑一个你不讨厌的入口。",
+  "你可以用声音，不一定要打字。",
+  "我会帮你把话变清楚。",
+  "今天的胜利可以很小。",
+  "小回合，也是真前进。",
+  "我们不追求一下子变完美。",
+  "你上次说清楚过程，这很重要。",
+  "先给自己一个启动信号。",
+  "一个动作点就够。",
+  "一个新词也算收获。",
+  "一个画面也能打开语文。",
+  "先读慢一点。",
+  "先说完整一点。",
+  "先把单位看一眼。",
+  "今天的大白心情不错。",
+  "你可以选择路线。",
+  "成长宇宙不是考试表。",
+  "你今天想去哪一舱？",
+  "我们赢一小局就收好。",
+  "如果累，就做保底版。",
+  "如果状态好，就打主动球。",
+  "如果不想学，先聊天。",
+  "大白还记得你的英国目标。",
+  "未来出国这条线，不用每天很重，但要不断。",
+  "先把今天过成一个故事。",
+  "别急，我在。",
+  "你的航线不是直线，也没关系。",
+  "今天只需要一个开始。",
+  "你来选，大白跟上。",
+  "我会把你的进步藏进宇宙里。",
+  "准备好了就进舱。",
+  "我们从一个小目标开始。"
+];
+
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
 }
@@ -205,6 +318,73 @@ function todayWakeHint() {
   const profile = todayLoadProfile();
   const total = profile.required.length;
   return `${profile.name}。今天只看 ${total} 个必做任务，完成后拿一个小奖励。`;
+}
+
+function onlineDayCount() {
+  const first = state.dabai?.onlineSince || TODAY;
+  return Math.max(1, dateDiffDays(first, TODAY) + 1);
+}
+
+function dabaiMood() {
+  return pickDaily(["有点兴奋", "安静在线", "想陪你赢一小局", "低声巡航", "准备听你说"], taskDoneCount() + 8);
+}
+
+function activePromptLine() {
+  return pickDaily(dabaiPromptLines, taskDoneCount() + (state.weather || "").length);
+}
+
+function memoryLine() {
+  const profile = state.profile || {};
+  const interests = profile.interests || ["网球"];
+  const goals = profile.goals || ["未来出国"];
+  const recent = profile.recent || ["数学状态不错"];
+  const options = [
+    `我记得你喜欢${interests[0]}。`,
+    `你有一个目标：${goals[0]}。`,
+    `最近我看到：${recent[0]}。`,
+    "你上次把过程讲清楚了。"
+  ];
+  return pickDaily(options, 13);
+}
+
+function renderModuleLaunchers() {
+  return `<div class="moduleGrid">${moduleLaunchers
+    .map(([id, icon, title, hint]) => `<button class="moduleButton ${state.activeModule === id ? "active" : ""}" data-module="${id}"><span>${icon}</span><b>${title}</b><small>${hint}</small></button>`)
+    .join("")}</div>`;
+}
+
+function renderUniverseSnapshot() {
+  const voyage = voyageState();
+  return `<section class="card universeSnapshot">
+    <div class="sectionTitle"><div><div class="pill">成长宇宙</div><h2>今天的大白记录</h2></div><div class="status">${escapeHtml(todayBadgesText())}</div></div>
+    <div class="universeGrid">
+      <div class="miniUniverse"><b>⚓ 航线</b><span>${escapeHtml(voyage.dots)}</span><small>${escapeHtml(voyage.nextText)}</small></div>
+      <div class="miniUniverse"><b>🏆 成就收藏</b><span>${escapeHtml(todayBadgesText())}</span><small>只是收藏，不兑换。</small></div>
+      <div class="miniUniverse"><b>📜 成长故事</b><span>${escapeHtml((state.battleReports || [])[0]?.records?.[0] || "还在写今天的故事")}</span><small>赢下一小局就会出现。</small></div>
+    </div>
+    ${renderExploreMap()}
+  </section>`;
+}
+
+function renderModulePanel() {
+  const module = state.activeModule || "";
+  const required = requiredTasks();
+  const optional = optionalTasks();
+  if (module === "learning") {
+    return `<section class="modulePanel">
+      <div class="sectionTitle">
+        <div><div class="pill">📚 训练室</div><h2>选一个小回合</h2></div>
+        <div class="status">${taskDoneCount()}/${required.length || 1}</div>
+      </div>
+      <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
+      ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
+    </section>`;
+  }
+  if (module === "explore") return `<section class="card modulePanel"><div class="pill">🌍 探索</div><h2>世界探索</h2>${renderExploreMap()}<div class="note blue">今天可以用一句英语，往下一站走一点。</div></section>`;
+  if (module === "sport") return `<section class="card modulePanel"><div class="pill">🎾 运动</div><h2>运动舱</h2><div class="taskList">${state.tasks.filter((task) => ["tennis", "harmonica"].includes(task.id)).map((task) => taskCard(task)).join("")}</div></section>`;
+  if (module === "reading") return `<section class="card modulePanel"><div class="pill">📖 阅读</div><h2>阅读舱</h2><div class="history">今天只读一页也可以。RAZ、朗文、哈利波特，都算往前走。</div><div class="note blue">先听，再说一句发生了什么。</div></section>`;
+  if (module === "chat") return `<section class="card modulePanel"><div class="pill">💬 聊天</div><h2>和大白说说</h2><div class="chatBox" id="chatBox">${renderConversation()}</div><label>直接跟大白说</label><textarea id="companionInput" placeholder="可以说：我今天不想学，或者我想先聊一下。"></textarea><div class="row"><button class="primary" id="voiceCompanion">🎙 开始说话</button><button class="secondary" id="sendCompanion">发送文字</button></div></section>`;
+  return `<section class="card modulePanel quietPanel"><h2>想做什么？</h2><p>先选一个房间。学习、阅读、运动、探索、聊天，都算和大白一起往前走。</p></section>`;
 }
 
 function drawLuckyReward() {
@@ -333,7 +513,7 @@ function updateBattleReport(task, badge = null) {
   recordLines.forEach((line) => {
     if (!report.records.includes(line)) report.records.push(line);
   });
-  state.battleReports = state.battleReports.slice(0, 30);
+  state.battleReports = state.battleReports.slice(0, 365);
 }
 
 function addGrowthDiary(task) {
@@ -352,7 +532,7 @@ function addGrowthDiary(task) {
   const index = day.entries.findIndex((item) => item.taskId === task.id);
   if (index >= 0) day.entries[index] = entry;
   else day.entries.push(entry);
-  state.growthDiary = state.growthDiary.slice(0, 30);
+  state.growthDiary = state.growthDiary.slice(0, 365);
 }
 
 function recentDiaryDays(limit = 7) {
@@ -901,37 +1081,36 @@ function materialCards(subject = "") {
 
 const renderers = {
   home() {
-    const required = requiredTasks();
-    const optional = optionalTasks();
     const reward = completionRewardText() || state.dailyReward?.text || "点一下幸运按钮，拿一个小奖励。奖励不大，但要有一点满足感。";
-    const voyage = voyageState();
+    const buddy = dabaiBuddyLines();
     return `<div class="simpleHome">
-      <section class="card focusCard">
-        <div class="focusTop">
+      <section class="card focusCard companionHome">
+        <div class="focusTop companionTop">
           <div>
-            <div class="pill">今日唤醒标题</div>
-            <h2>${escapeHtml(todayWakeTitle())}</h2>
-            <p>${escapeHtml(todayWakeHint())}</p>
-            <div class="voyageLine"><b>⚓ 航线</b><br><span class="voyageDots">${escapeHtml(voyage.dots)}</span><br><span>${escapeHtml(voyage.nextText)}</span></div>
-            ${renderExploreMap()}
+            <div class="pill">🤖 DABAI</div>
+            <h2>早上好，${escapeHtml(state.profile?.childName || "八宝")}。</h2>
+            <p class="dabaiLine">${escapeHtml(activePromptLine())}</p>
+            <div class="memoryLine">我记得：${escapeHtml(memoryLine())}</div>
+            <div class="dabaiStatusGrid">
+              <div><b>在线</b><span>第 ${onlineDayCount()} 天</span></div>
+              <div><b>今天状态</b><span>${escapeHtml(buddy.status)}</span></div>
+              <div><b>今天心情</b><span>${escapeHtml(dabaiMood())}</span></div>
+              <div><b>今天观察</b><span>${escapeHtml(buddy.observation)}</span></div>
+            </div>
           </div>
           <div class="rewardPanel">
-            <div class="tiny">今日小奖励</div>
+            <div class="tiny">大白在这里</div>
             <div class="rewardText">${escapeHtml(reward)}</div>
             <div class="todayBadges"><span>今日获得：</span><br>${escapeHtml(todayBadgesText())}</div>
             <button class="primary rewardButton" id="luckyReward">幸运按钮</button>
           </div>
         </div>
-        <div class="choiceGrid statusGrid">${choiceButtons("weather", [["很好", "完整训练"], ["还行", "标准短版"], ["有点累", "三科保底"], ["不想学", "最低启动"]])}</div>
+        <div class="choiceGrid statusGrid">${choiceButtons("weather", [["很好", "状态不错"], ["还行", "正常巡航"], ["有点累", "低电量"], ["不想学", "先陪我"]])}</div>
+        <h3 class="moduleQuestion">想做什么？</h3>
+        ${renderModuleLaunchers()}
       </section>
-      <section class="todayTasks">
-        <div class="sectionTitle">
-          <div><div class="pill">根据今日状态生成</div><h2>今天只做这些</h2></div>
-          <div class="status">${taskDoneCount()}/${required.length || 1} 必做</div>
-        </div>
-        <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
-        ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
-      </section>
+      ${renderUniverseSnapshot()}
+      ${renderModulePanel()}
       ${renderBattleReports()}
       ${renderDabaiBuddy()}
       ${renderOnePointBubble()}
@@ -1057,6 +1236,13 @@ function bindAll() {
     drawLuckyReward();
     renderPages("home");
     speak(state.dailyReward?.text || "");
+  });
+  document.querySelectorAll("[data-module]").forEach((button) => {
+    button.onclick = () => {
+      state.activeModule = state.activeModule === button.dataset.module ? "" : button.dataset.module;
+      save();
+      renderPages("home");
+    };
   });
   document.querySelectorAll("[data-done]").forEach((button) => {
     button.onclick = () => {
@@ -1268,7 +1454,7 @@ function renderProgress() {
   const total = requiredTasks().length || 1;
   const percent = Math.min(100, Math.round((count / total) * 100));
   const voyage = voyageState();
-  progressNum.textContent = `${percent}%`;
+  progressNum.textContent = `${onlineDayCount()}天`;
   bar.style.width = `${percent}%`;
   progressText.textContent = `${voyage.countText} · ${voyage.nextText}`;
 }
@@ -1335,9 +1521,9 @@ function downloadJson(filename, data) {
 
 function title() {
   const date = new Date();
-  todayTitle.textContent = `${date.getMonth() + 1}月${date.getDate()}日 · ${todayWakeTitle()}`;
+  todayTitle.textContent = `${date.getMonth() + 1}月${date.getDate()}日 · 大白在线`;
   const motto = document.getElementById("motto");
-  if (motto) motto.textContent = todayWakeHint();
+  if (motto) motto.textContent = activePromptLine();
 }
 
 document.getElementById("readPage").onclick = () => speak(pageText());
