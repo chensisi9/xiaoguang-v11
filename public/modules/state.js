@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-simple-blue-reward";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-battle-room";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";

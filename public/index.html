@@ -84,63 +84,64 @@ summary{cursor:pointer;color:#8cff6a;font-weight:900}
 @media(max-width:920px){.coachGrid,.miniGrid{grid-template-columns:1fr}.fieldWithVoice{grid-template-columns:minmax(0,1fr) 54px}}
 </style>
 <style>
-:root{--bg1:#f5f9ff;--bg2:#eaf3ff;--ink:#102033;--muted:#637083;--card:rgba(255,255,255,.82);--line:rgba(80,142,220,.18);--blue:#1677ff;--green:#16a34a;--amber:#f59e0b;--red:#ef4444;--dark:#0b5ed7;--soft:#f7fbff}
-body{background:radial-gradient(circle at 20% 0%,#d9ecff 0,#f7fbff 34%,#eef6ff 100%);color:var(--ink)}
+:root{--bg1:#050914;--bg2:#101a2f;--ink:#eef7ff;--muted:#92a7bd;--card:rgba(9,17,31,.82);--line:rgba(116,204,255,.22);--blue:#4cc9ff;--green:#67e8f9;--amber:#ffb84d;--red:#ff6b6b;--dark:#08111f;--soft:#0d1a2d}
+body{background:#050914;background-image:linear-gradient(180deg,rgba(76,201,255,.1),transparent 240px),linear-gradient(rgba(116,204,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(116,204,255,.055) 1px,transparent 1px),linear-gradient(135deg,#050914 0%,#0c1730 58%,#10131d 100%);background-size:100% 100%,34px 34px,34px 34px,100% 100%;color:var(--ink)}
 .app{max-width:980px;padding:18px}
-.hero,.card,.footer{background:var(--card);border:1px solid rgba(255,255,255,.75);box-shadow:0 18px 55px rgba(42,91,155,.12);backdrop-filter:blur(22px)}
+.hero,.card,.footer{background:linear-gradient(180deg,rgba(13,26,47,.92),rgba(6,13,25,.9));border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(18px)}
 .hero{border-radius:8px;grid-template-columns:1fr 180px;padding:18px;margin-bottom:12px}
-.tag{background:#e7f1ff;border:1px solid #cfe4ff;color:#0b5ed7;border-radius:8px;font-family:inherit}
-h1{color:#102033;font-size:28px}
-.sub{color:#637083}
-.motto{background:#eef6ff;border-left:3px solid #1677ff;color:#24415f;border-radius:8px}
-.progress{background:#0b5ed7;border:0;border-radius:8px;color:#fff}
-.progressNum{color:#fff;text-shadow:none}
-.bar{background:rgba(255,255,255,.28)}
-.barin{background:#fff}
+.tag{background:rgba(76,201,255,.12);border:1px solid rgba(76,201,255,.38);color:#d8f6ff;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
+.sub{color:#9fb4c8}
+.motto{background:rgba(76,201,255,.1);border-left:3px solid #4cc9ff;color:#d8f6ff;border-radius:8px}
+.progress{background:linear-gradient(180deg,rgba(76,201,255,.16),rgba(255,184,77,.1));border:1px solid rgba(76,201,255,.28);border-radius:8px;color:#fff}
+.progressNum{color:#ffcf7a;text-shadow:0 0 22px rgba(255,184,77,.25)}
+.bar{background:rgba(255,255,255,.13)}
+.barin{background:linear-gradient(90deg,#4cc9ff,#ffb84d)}
 .panel,.nav,.footer{display:none}
 .page{animation:fade .18s}
 .simpleHome{display:grid;gap:12px}
 .card{border-radius:8px;padding:16px}
 .focusCard{padding:18px}
 .focusTop{display:grid;grid-template-columns:1fr 270px;gap:12px;align-items:stretch}
-.focusCard h2,.sectionTitle h2{font-size:24px;margin:8px 0;color:#102033}
-.rewardPanel{background:#f3f8ff;border:1px solid #d7e9ff;border-radius:8px;padding:13px;display:flex;flex-direction:column;justify-content:space-between}
-.rewardText{font-size:15px;line-height:1.55;color:#24415f;margin:8px 0}
-.rewardButton{margin-top:8px;background:#1677ff;color:#fff}
+.focusCard h2,.sectionTitle h2{font-size:24px;margin:8px 0;color:#f7fbff}
+.rewardPanel{background:rgba(255,184,77,.1);border:1px solid rgba(255,184,77,.32);border-radius:8px;padding:13px;display:flex;flex-direction:column;justify-content:space-between}
+.rewardText{font-size:15px;line-height:1.55;color:#ffe7b5;margin:8px 0}
+.rewardButton{margin-top:8px;background:linear-gradient(90deg,#ffb84d,#ffd166);color:#1a1205}
 .choiceGrid.statusGrid{grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
-.choice{background:#fff;border-color:#d8e7fb;color:#24415f;border-radius:8px}
-.choice.active{background:#e9f3ff;border-color:#1677ff;color:#0b5ed7}
-.choice .small{color:#637083}
+.choice{background:rgba(255,255,255,.045);border-color:rgba(116,204,255,.22);color:#eef7ff;border-radius:8px}
+.choice.active{background:rgba(76,201,255,.15);border-color:#4cc9ff;color:#ffffff;box-shadow:0 0 0 1px rgba(76,201,255,.2),0 0 22px rgba(76,201,255,.1)}
+.choice .small{color:#9fb4c8}
 .sectionTitle{display:flex;justify-content:space-between;gap:10px;align-items:end;margin:8px 0 10px}
-.pill{background:#edf6ff;border:1px solid #d3e8ff;color:#0b5ed7;border-radius:8px}
-.task{background:rgba(255,255,255,.86);border-color:#dbeafe}
-.task.done{background:#f0fdf4}
-.icon{background:#eef6ff;border-color:#cfe4ff;border-radius:8px}
+.pill{background:rgba(76,201,255,.1);border:1px solid rgba(76,201,255,.32);color:#d8f6ff;border-radius:8px}
+.task{background:rgba(9,17,31,.78);border-color:rgba(116,204,255,.2)}
+.task.done{background:rgba(18,45,42,.78);border-color:rgba(103,232,249,.28)}
+.icon{background:rgba(76,201,255,.11);border-color:rgba(76,201,255,.28);border-radius:8px}
 .coachGrid{grid-template-columns:minmax(0,1fr) minmax(300px,.88fr);gap:10px}
-.laneTitle{background:#f2f8ff;border-color:#d3e8ff;color:#0b5ed7;border-radius:8px}
+.laneTitle{background:rgba(76,201,255,.1);border-color:rgba(76,201,255,.28);color:#d8f6ff;border-radius:8px}
 .note,.blue,.green,.quote,.history,.chatEmpty{border-radius:8px}
-.blue{background:#eef6ff;border-left-color:#1677ff;color:#24415f}
-.green{background:#f0fdf4;border-left-color:#16a34a;color:#166534}
-.history{background:#fff;border-color:#e3edf9;color:#384b61}
-textarea,input{background:#fff;border-color:#d8e7fb;color:#102033;border-radius:8px}
-textarea::placeholder,input::placeholder{color:#8a98aa}
+.blue{background:rgba(76,201,255,.09);border-left-color:#4cc9ff;color:#d8f6ff}
+.green{background:rgba(103,232,249,.08);border-left-color:#67e8f9;color:#d7fbff}
+.history{background:rgba(255,255,255,.045);border-color:rgba(116,204,255,.18);color:#d6e6f2}
+textarea,input{background:rgba(2,8,18,.72);border-color:rgba(116,204,255,.22);color:#eef7ff;border-radius:8px}
+textarea::placeholder,input::placeholder{color:#71869b}
 .fieldWithVoice{grid-template-columns:minmax(0,1fr) 54px}
-.voiceMini{background:#eef6ff;border-color:#cfe4ff;color:#0b5ed7;border-radius:8px}
-.voiceMini.active{background:#1677ff;color:#fff}
-.primary{border-radius:8px;background:#1677ff;color:#fff}
-.secondary{background:#eef6ff!important;color:#0b5ed7!important;border:1px solid #cfe4ff!important}
+.voiceMini{background:rgba(76,201,255,.1);border-color:rgba(76,201,255,.28);color:#d8f6ff;border-radius:8px}
+.voiceMini.active{background:#4cc9ff;color:#06111f}
+.primary{border-radius:8px;background:#4cc9ff;color:#06111f}
+.primary.rewardButton{background:linear-gradient(90deg,#ffb84d,#ffd166);color:#1a1205}
+.secondary{background:rgba(255,255,255,.055)!important;color:#d8f6ff!important;border:1px solid rgba(116,204,255,.22)!important}
 .ladder{grid-template-columns:repeat(4,1fr)}
-.ladder button{text-align:center;background:#fff;border-color:#d8e7fb;color:#24415f;border-radius:8px}
-.ladder button.active{background:#1677ff;color:#fff}
-.optionalBlock{background:rgba(255,255,255,.68);border:1px solid #dbeafe;border-radius:8px;padding:13px}
-.optionalBlock summary{color:#0b5ed7}
+.ladder button{text-align:center;background:rgba(255,255,255,.04);border-color:rgba(116,204,255,.22);color:#d8f6ff;border-radius:8px}
+.ladder button.active{background:#d8f6ff;color:#06111f}
+.optionalBlock{background:rgba(9,17,31,.62);border:1px solid rgba(116,204,255,.2);border-radius:8px;padding:13px}
+.optionalBlock summary{color:#ffcf7a}
 @media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid{grid-template-columns:1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="hero">
- <div><div class="tag">DABAI DAILY</div><h1 id="todayTitle">大白</h1><p class="sub">先选今天状态，再开始一个小回合。</p><div class="motto" id="motto">少一点，准一点，做完有反馈。</div></div>
+ <div><div class="tag">DABAI BATTLE ROOM</div><h1 id="todayTitle">大白</h1><p class="sub">先选今天状态，再进入一个训练回合。</p><div class="motto" id="motto">少一点，准一点，做完有反馈。</div></div>
  <div class="progress"><div class="tiny">今日必做</div><div class="progressNum" id="progressNum">0%</div><div class="bar"><div class="barin" id="bar"></div></div><div class="tiny" id="progressText">今天先完成一项就很好。</div></div>
 </header>
 <section class="panel">
@@ -154,6 +155,6 @@ textarea::placeholder,input::placeholder{color:#8a98aa}
 <main id="pages"></main>
 <footer class="footer"><div>原则：每日少一点，动作准一点，记录留一点。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260610-simple-blue-reward"></script>
+<script type="module" src="./app.js?v=20260610-battle-room"></script>
 </body>
 </html>

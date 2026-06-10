@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-simple-blue-reward";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-battle-room";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260610-simple-blue-reward";
+} from "./modules/state.js?v=20260610-battle-room";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -112,34 +112,34 @@ const loadProfiles = {
 
 const wakeTitles = {
   "很好": [
-    "蓝色 Ace 日：今天打主动球",
-    "八宝主场日：把会的打稳",
-    "小队长上线：今天抓一个陷阱"
+    "战斗教室上线：今天打主动球",
+    "舰队小队长日：把会的打稳",
+    "零重力训练日：今天抓一个陷阱"
   ],
   "还行": [
-    "标准推进日：少一点，但要准",
-    "稳住节奏日：三科各赢一小局",
-    "蓝色巡航日：不用猛冲，保持航线"
+    "轨道巡航日：少一点，但要准",
+    "小队推进日：三科各赢一小局",
+    "稳定航线日：不用猛冲，保持航线"
   ],
   "有点累": [
-    "低电量保护日：只做关键球",
-    "轻装上场日：少做也要留下痕迹",
+    "低电量护盾日：只做关键球",
+    "轻装进舱日：少做也要留下痕迹",
     "慢速胜利日：今天不拼量"
   ],
   "不想学": [
-    "最低启动日：先赢 5 分钟",
-    "破冰日：只开一个小口",
-    "不想学也能赢日：完成最小动作"
+    "最小引擎启动：先赢 5 分钟",
+    "破冰入舱日：只开一个小口",
+    "不想学也能赢：完成最小动作"
   ]
 };
 
 const luckyRewards = [
-  "奖励：蓝色能量币 +3。用途：可以一本正经地宣布“我今天赢了一小局”。",
+  "奖励：舰队能量币 +3。用途：可以一本正经地宣布“我今天赢了一小局”。",
   "奖励：错因猎人徽章。今天抓到一个错误，比多做十道糊涂题更值。",
   "奖励：大白批准 30 秒胜利姿势。可以很低调，也可以像网球 Ace 一样点头。",
   "奖励：脑力冷却券 1 张。喝水、伸懒腰、回来只改一个点。",
   "奖励：小教练身份卡。下一题可以先让大人故意错一步，你来抓。",
-  "奖励：蓝色小闪电。今天的任务不是变完美，是保持前进。",
+  "奖励：冷光小闪电。今天的任务不是变完美，是保持前进。",
   "奖励：一句通关口令：先完成，再变好。念完自动加一点勇气。",
   "奖励：复盘星星 1 颗。不是因为做得多，是因为你留下了证据。"
 ];
