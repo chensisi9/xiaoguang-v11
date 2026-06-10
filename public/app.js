@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260603-abroad-daily";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-learning-loop-2";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260603-abroad-daily";
+} from "./modules/state.js?v=20260610-learning-loop-2";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -114,6 +114,65 @@ function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
 }
 
+const icapSteps = [
+  ["P", "P 看过"],
+  ["A", "A 练过"],
+  ["C", "C 讲清楚"],
+  ["I", "I 得到反馈"]
+];
+
+function ensureDailyNote(id) {
+  state.dailyNotes = state.dailyNotes || {};
+  state.dailyNotes[id] = state.dailyNotes[id] || {};
+  return state.dailyNotes[id];
+}
+
+function icapRank(value) {
+  return Math.max(0, icapSteps.findIndex(([key]) => key === value) + 1);
+}
+
+function markIcap(taskId, stage) {
+  const note = ensureDailyNote(taskId);
+  note.icapStages = note.icapStages || {};
+  const rank = icapRank(stage);
+  icapSteps.slice(0, rank).forEach(([key]) => (note.icapStages[key] = true));
+  const task = state.tasks.find((item) => item.id === taskId);
+  if (task) task.icap = stage;
+  if (stage === "I") note.feedback = buildTaskFeedback(task, note);
+  save();
+}
+
+function stageDone(task, stage) {
+  const note = state.dailyNotes?.[task.id] || {};
+  return Boolean(note.icapStages?.[stage]) || icapRank(task.icap) >= icapRank(stage);
+}
+
+function buildTaskFeedback(task, note = {}) {
+  const answer = String(note.answer || "").trim();
+  const explain = String(note.explain || "").trim();
+  const subject = task?.id || "";
+  if (!answer && !explain) return "先留下一点输出，大白才能给你互动反馈。最低版本：写一个答案，或者说一句“我是这样想的”。";
+  const hasExplain = explain.length >= 8;
+  if (subject === "math") {
+    return hasExplain
+      ? "大白反馈：你已经不只是做题，而是在讲思路了。下一步只抓一个点：算完后用估算检查答案是不是离谱。"
+      : "大白反馈：答案已经留下来了。下一步补一句思路：你先算了什么？为什么这样列式？";
+  }
+  if (subject === "english") {
+    return hasExplain
+      ? "大白反馈：你完成了英文输出和自我解释。下一步只改一个点：句首大写、标点、the/they/their 或 where/when 里选一个。"
+      : "大白反馈：你已经开口/写出来了。下一步用中文讲一下这句英文是什么意思，再把一个词换成自己的内容。";
+  }
+  if (subject === "chinese") {
+    return hasExplain
+      ? "大白反馈：你能把画面或中心讲出来了。下一步让句子更具体：补一个颜色、动作或感受。"
+      : "大白反馈：已经有输出。下一步别写长，先说清楚：画面里有什么？人物或作者的心情是什么？";
+  }
+  return hasExplain
+    ? "大白反馈：你已经练过，也能讲清楚一个动作点。下一步只保留一个改进点，明天继续。"
+    : "大白反馈：练习有记录了。下一步补一句你刚才怎么做的，或者哪里最容易乱。";
+}
+
 function initNav() {
   nav.innerHTML = pagesDef.map((p, i) => `<button class="${i === 0 ? "active" : ""}" data-page="${p.id}">${p.icon} ${p.name}</button>`).join("");
   nav.querySelectorAll("button").forEach((button) => (button.onclick = () => showPage(button.dataset.page)));
@@ -174,13 +233,17 @@ function resourcePlanCard(compact = false) {
   const mode = resourceIntensityKey();
   const englishTracks = dailyResourceTracks.filter((track) => track.subject === "英语");
   const mathTracks = dailyResourceTracks.filter((track) => track.subject === "数学");
-  const renderTrack = (track) => `<div class="history"><b>${escapeHtml(track.title)}</b><br><span class="tiny">${escapeHtml(track.purpose)}</span><br>${escapeHtml(track[mode])}</div>`;
+  const renderTrack = (track) => {
+    const value = state.dailyNotes?.resources?.[track.id]?.output || "";
+    return `<div class="history"><b>${escapeHtml(track.title)}</b><br><span class="tiny">${escapeHtml(track.purpose)}</span><br>${escapeHtml(track[mode])}${compact ? "" : `<label>今日输出</label><textarea data-resource-track="${track.id}" placeholder="留下今天的输出：读了哪一页？说了哪一句？卡在哪个词？">${escapeHtml(value)}</textarea>`}</div>`;
+  };
   return `<div class="card">
     <div class="taskTop"><div class="pill">留学能力线 · 每日</div><div class="tiny">${mode === "full" ? "完整" : mode === "standard" ? "标准" : mode === "support" ? "保底" : "最低"}</div></div>
     <h2>英语优先，每天不断线</h2>
     <p>RAZ、自然拼读、朗文、哈利波特每天都进计划；状态差就变成微任务，不取消。</p>
     ${compact ? englishTracks.slice(0, 2).map(renderTrack).join("") : englishTracks.map(renderTrack).join("")}
     <div class="note blue">数学辅助：${escapeHtml(mathTracks[0][mode])}</div>
+    ${compact ? "" : mathTracks.map(renderTrack).join("")}
   </div>`;
 }
 
@@ -379,6 +442,7 @@ function taskCard(task, compact = false) {
   const status = taskLoadStatus(task);
   const paused = status === "暂停";
   const examples = paused ? [] : taskExamples(task);
+  const note = state.dailyNotes?.[task.id] || {};
   return `<div class="card task ${done ? "done" : ""}">
     <div class="taskTop"><div class="icon">${task.icon}</div><div class="pill">${task.type} · ${status}</div></div>
     <h2>${task.title}</h2>
@@ -393,10 +457,13 @@ function taskCard(task, compact = false) {
         <details><summary>提示 / 答案</summary><div class="tiny">${escapeHtml(example.hint)}<br><b>参考：</b>${escapeHtml(example.answer)}</div></details>
       </div>`).join("")}
     </div>` : ""}
-    ${paused ? "" : compact ? "" : `<label>今天实际练了什么</label>${noteField(task, "today", "例如：6 道计算题 / 朗读第 3 段 / 第 4-8 小节")}` }
-    ${paused ? "" : compact ? "" : `<label>今天只改一个点</label>${noteField(task, "focus", "例如：计算前先圈关键词 / 换孔慢半拍 / 击球点靠前")}` }
+    ${paused ? "" : compact ? "" : `<label>八宝的答案 / 输出</label>${noteField(task, "answer", "写答案、英文句子、语文句子，或者记录口头说出的内容")}
+    <label>我自己讲清楚</label>${noteField(task, "explain", "用自己的话讲：我怎么想的？哪里容易错？下一次只改哪一点？")}
+    <label>今天实际练了什么</label>${noteField(task, "today", "例如：6 道计算题 / 朗读第 3 段 / 第 4-8 小节")}
+    <label>今天只改一个点</label>${noteField(task, "focus", "例如：计算前先圈关键词 / 换孔慢半拍 / 击球点靠前")}
+    ${note.feedback ? `<div class="note green"><b>大白互动反馈</b><br>${escapeHtml(note.feedback)}</div>` : `<div class="note blue"><b>大白互动反馈</b><br>写下答案和讲解后，点“I 得到反馈”，大白会根据八宝的输出给下一步。</div>`}` }
     ${paused ? "" : `<div class="ladder" data-task="${task.id}">
-      ${["P 看过", "A 练过", "C 讲清楚", "I 得到反馈"].map((item) => `<button class="${task.icap === item[0] ? "active" : ""}" data-icap="${item[0]}">${item}</button>`).join("")}
+      ${icapSteps.map(([key, label]) => `<button class="${stageDone(task, key) ? "active" : ""}" data-icap="${key}">${label}</button>`).join("")}
     </div>
     <button class="primary ${done ? "done" : ""}" data-done="task_${task.id}">${done ? "已完成" : status === "可选" ? "完成可选项" : "完成这一项"}</button>`}
   </div>`;
@@ -614,9 +681,32 @@ function bindAll() {
   });
   document.querySelectorAll("[data-daily-task]").forEach((input) => {
     input.oninput = () => {
+      const note = ensureDailyNote(input.dataset.dailyTask);
+      note[input.dataset.dailyKey] = input.value;
+      if (input.dataset.dailyKey === "answer" && input.value.trim()) {
+        note.icapStages = note.icapStages || {};
+        note.icapStages.P = true;
+        note.icapStages.A = true;
+        const task = state.tasks.find((item) => item.id === input.dataset.dailyTask);
+        if (task && icapRank(task.icap) < icapRank("A")) task.icap = "A";
+      }
+      if (input.dataset.dailyKey === "explain" && input.value.trim()) {
+        note.icapStages = note.icapStages || {};
+        note.icapStages.P = true;
+        note.icapStages.A = true;
+        note.icapStages.C = true;
+        const task = state.tasks.find((item) => item.id === input.dataset.dailyTask);
+        if (task && icapRank(task.icap) < icapRank("C")) task.icap = "C";
+      }
+      save();
+    };
+  });
+  document.querySelectorAll("[data-resource-track]").forEach((input) => {
+    input.oninput = () => {
       state.dailyNotes = state.dailyNotes || {};
-      state.dailyNotes[input.dataset.dailyTask] = state.dailyNotes[input.dataset.dailyTask] || {};
-      state.dailyNotes[input.dataset.dailyTask][input.dataset.dailyKey] = input.value;
+      state.dailyNotes.resources = state.dailyNotes.resources || {};
+      state.dailyNotes.resources[input.dataset.resourceTrack] = state.dailyNotes.resources[input.dataset.resourceTrack] || {};
+      state.dailyNotes.resources[input.dataset.resourceTrack].output = input.value;
       save();
     };
   });
@@ -629,9 +719,7 @@ function bindAll() {
   });
   document.querySelectorAll("[data-task] [data-icap]").forEach((button) => {
     button.onclick = () => {
-      const task = state.tasks.find((item) => item.id === button.parentElement.dataset.task);
-      task.icap = button.dataset.icap;
-      save();
+      markIcap(button.parentElement.dataset.task, button.dataset.icap);
       renderPages("daily");
     };
   });
