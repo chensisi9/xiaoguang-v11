@@ -582,6 +582,11 @@ export function createInitialState() {
       lastSpokenAt: "",
       quietMode: false
     },
+    voyage: {
+      count: 0,
+      lastKeptDate: ""
+    },
+    growthDiary: [],
     done: {}
   };
 }

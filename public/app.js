@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-battle-room";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-voyage-diary";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260610-battle-room";
+} from "./modules/state.js?v=20260610-voyage-diary";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -156,6 +156,18 @@ function daySeed(extra = 0) {
   return TODAY.split("-").reduce((sum, part) => sum + Number(part), 0) + extra;
 }
 
+function dateLabel(dateString = TODAY) {
+  const date = new Date(dateString);
+  return `${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+function dateDiffDays(fromDate, toDate = TODAY) {
+  if (!fromDate) return 999;
+  const from = new Date(`${fromDate}T00:00:00`);
+  const to = new Date(`${toDate}T00:00:00`);
+  return Math.round((to - from) / 86400000);
+}
+
 function pickDaily(list, extra = 0) {
   if (!list?.length) return "";
   return list[daySeed(extra) % list.length];
@@ -185,6 +197,69 @@ function completionRewardText() {
   const total = requiredTasks().length;
   if (!total || taskDoneCount() < total) return "";
   return "收工奖励：今天的必做项已经清掉。大白记录：八宝不是靠鸡血推进，是靠一小步一小步赢。";
+}
+
+function voyageState() {
+  const voyage = state.voyage || { count: 0, lastKeptDate: "" };
+  const done = taskDoneCount();
+  const keptToday = voyage.lastKeptDate === TODAY;
+  const waiting = !keptToday && voyage.count > 0 && dateDiffDays(voyage.lastKeptDate) > 1;
+  const countText = waiting || !voyage.count ? "大白等你重新起航" : `第 ${voyage.count} 天`;
+  const nextText = done >= 2 ? "今日稳定完成" : done >= 1 ? "航线保持成功" : "今日完成后：航线 +1";
+  return { countText, nextText, keptToday, waiting };
+}
+
+function keepVoyageIfNeeded() {
+  state.voyage = state.voyage || { count: 0, lastKeptDate: "" };
+  if (state.voyage.lastKeptDate === TODAY) return;
+  state.voyage.count = dateDiffDays(state.voyage.lastKeptDate) === 1 ? (state.voyage.count || 0) + 1 : 1;
+  state.voyage.lastKeptDate = TODAY;
+}
+
+function taskByDoneKey(key) {
+  const id = String(key || "").replace(/^task_/, "");
+  return state.tasks.find((task) => task.id === id);
+}
+
+function taskSpecificDiary(task) {
+  const note = state.dailyNotes?.[task.id] || {};
+  if (note.explain?.trim()) return `他把“${note.explain.trim().slice(0, 26)}”这一步讲清楚了`;
+  if (note.focus?.trim()) return `他留下了一个小重点：${note.focus.trim().slice(0, 22)}`;
+  if (note.answer?.trim()) return "他先把答案说了出来";
+  return "他完成了一个小回合";
+}
+
+function diaryMoodClause() {
+  if (state.weather === "不想学") return "虽然今天启动很小，";
+  if (state.weather === "有点累") return "虽然今天不用猛冲，";
+  return "今天节奏稳稳的，";
+}
+
+function makeGrowthDiaryLine(task) {
+  return `${dateLabel()}，八宝今天完成了${task.title}。${diaryMoodClause()}${taskSpecificDiary(task)}，航线保持成功。`;
+}
+
+function addGrowthDiary(task) {
+  state.growthDiary = state.growthDiary || [];
+  let day = state.growthDiary.find((item) => item.date === TODAY);
+  if (!day) {
+    day = { date: TODAY, entries: [] };
+    state.growthDiary.unshift(day);
+  }
+  const entry = {
+    id: task.id,
+    taskId: task.id,
+    createdAt: new Date().toISOString(),
+    text: makeGrowthDiaryLine(task)
+  };
+  const index = day.entries.findIndex((item) => item.taskId === task.id);
+  if (index >= 0) day.entries[index] = entry;
+  else day.entries.push(entry);
+  state.growthDiary = state.growthDiary.slice(0, 30);
+}
+
+function recentDiaryDays(limit = 7) {
+  return (state.growthDiary || []).slice(0, limit);
 }
 
 const icapSteps = [
@@ -229,29 +304,29 @@ function buildTaskFeedback(task, note = {}) {
   const hasEnglish = /[a-z]/i.test(combined);
   const mentionsBecause = /\bbecause\b|因为|所以/.test(combined);
   const mentionsWhereWhen = /where|when|哪里|地点|时间|什么时候/i.test(combined);
-  if (!answer && !explain) return "先留下一点输出，大白才能给你互动反馈。最低版本：写一个答案，或者说一句“我是这样想的”。";
+  if (!answer && !explain) return "八宝，先说出一点点，大白才能帮你改一个点。最低版本：只说一句“我是这样想的”。";
   const hasExplain = explain.length >= 8;
-  const observed = hasExplain ? "我看见八宝已经完成了“做出来 + 讲思路”，这比只写答案更像真正训练" : "我看见八宝已经把输出留下来了，现在还差一句思路";
+  const observed = hasExplain ? "这次你说清楚了过程" : "这次你先把输出留下来了";
   if (subject === "math") {
-    const precise = !hasNumber ? "补上一个关键数字或单位，让答案能被检查" : hasExplain ? "算完后用估算或单位回看一次，抓粗心陷阱" : "补一句：第一步为什么这样列式";
-    return `大白反馈：${observed}。精确改一点：${precise}。下一回合只问自己一句：这个结果大概合理吗？`;
+    const precise = !hasNumber ? "补上一个关键数字或单位" : hasExplain ? "最后答案可以再读慢一点，顺手检查单位" : "补一句第一步为什么这样列式";
+    return `八宝，${observed}。大白只提醒一个点：${precise}。`;
   }
   if (subject === "english") {
     const precise = !hasEnglish
       ? "先补一句最短英文，不追求长，主语 + 动作就可以"
       : mentionsWhereWhen
-        ? "把 where 当地点、when 当时间，再各造一句武汉网球营句子"
+        ? "where 管地点，when 管时间，先只选一个"
         : mentionsBecause
-          ? "because 后面只接一个清楚理由，不要一口气接太长"
-          : "只查一个点：句首大写、句末标点、the/they/their 三选一";
-    return `大白反馈：${observed}。精确改一点：${precise}。下一回合用自己的内容再说一遍，不背模板。`;
+          ? "because 后面只接一个清楚理由"
+          : "只查一个点：句首大写或句末标点";
+    return `八宝，${observed}。大白只提醒一个点：${precise}。`;
   }
   if (subject === "chinese") {
-    const precise = /画面|颜色|动作|心情|作者|人物/.test(combined) ? "保留这个画面，再补一个动作或感受" : "先说清楚画面里有什么，再说作者心情";
-    return `大白反馈：${observed}。精确改一点：${precise}。下一回合不用长，先把一句话变具体。`;
+    const precise = /画面|颜色|动作|心情|作者|人物/.test(combined) ? "保留这个画面，再补一个动作或感受" : "先说清楚画面里有什么";
+    return `八宝，${observed}。大白只提醒一个点：${precise}。`;
   }
-  const precise = hasExplain ? "把动作点缩成一个词，明天直接复用" : "补一句刚才哪里最容易乱，或者哪个动作最顺";
-  return `大白反馈：${observed}。精确改一点：${precise}。下一回合只保留一个动作，不加量。`;
+  const precise = hasExplain ? "把动作点缩成一个词，明天直接复用" : "补一句刚才哪个动作最顺";
+  return `八宝，${observed}。大白只提醒一个点：${precise}。`;
 }
 
 function initNav() {
@@ -518,7 +593,8 @@ function choiceButtons(field, options) {
 function noteField(task, key, label, placeholder) {
   const value = state.dailyNotes?.[task.id]?.[key] || "";
   const id = `daily-${safeId(task.id)}-${safeId(key)}`;
-  return `<label for="${id}">${escapeHtml(label)}</label><div class="fieldWithVoice"><textarea id="${id}" data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea><button type="button" class="voiceMini" data-voice-target="${id}" title="语音输入">🎙 说</button></div>`;
+  const hint = key === "answer" ? `<div class="coachHint">先说出来，大白再帮你改一个点</div>` : "";
+  return `<label for="${id}">${escapeHtml(label)}</label>${hint}<div class="fieldWithVoice"><textarea id="${id}" data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea><button type="button" class="voiceMini" data-voice-target="${id}" title="语音输入">🎙 说</button></div>`;
 }
 
 function taskCard(task, compact = false) {
@@ -613,6 +689,31 @@ function weeklySummary() {
   return { days: week.length, feedbackCount, avg };
 }
 
+function renderGrowthDiary() {
+  const days = recentDiaryDays();
+  const body = days.length
+    ? days
+        .map((day) => `<div class="history"><b>${escapeHtml(dateLabel(day.date))}</b>${(day.entries || []).map((entry) => `<div class="diaryLine">${escapeHtml(entry.text)}</div>`).join("")}</div>`)
+        .join("")
+    : `<div class="history">大白今天还没写记录。完成任意一项后，这里会留下温和的一句话。</div>`;
+  return `<details class="optionalBlock diaryBlock">
+    <summary>大白今日记录</summary>
+    <div class="tiny diaryHint">最近 7 天，大白只记录前进的小证据。</div>
+    ${body}
+  </details>`;
+}
+
+function handleDoneClick(key) {
+  const next = !state.done[key];
+  setDone(key, next);
+  const task = taskByDoneKey(key);
+  if (next && task) {
+    if (requiredTasks().some((item) => item.id === task.id)) keepVoyageIfNeeded();
+    addGrowthDiary(task);
+    save();
+  }
+}
+
 function field(group, key, placeholder) {
   const value = state[group]?.[key] || "";
   return `<label>${placeholder}</label><textarea data-group="${group}" data-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>`;
@@ -630,6 +731,7 @@ const renderers = {
     const required = requiredTasks();
     const optional = optionalTasks();
     const reward = completionRewardText() || state.dailyReward?.text || "点一下幸运按钮，拿一个小奖励。奖励不大，但要有一点满足感。";
+    const voyage = voyageState();
     return `<div class="simpleHome">
       <section class="card focusCard">
         <div class="focusTop">
@@ -637,6 +739,7 @@ const renderers = {
             <div class="pill">今日唤醒标题</div>
             <h2>${escapeHtml(todayWakeTitle())}</h2>
             <p>${escapeHtml(todayWakeHint())}</p>
+            <div class="voyageLine"><b>当前稳定航线：</b>${escapeHtml(voyage.countText)}<br><span>${escapeHtml(voyage.nextText)}</span></div>
           </div>
           <div class="rewardPanel">
             <div class="tiny">今日小奖励</div>
@@ -654,6 +757,7 @@ const renderers = {
         <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
         ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
       </section>
+      ${renderGrowthDiary()}
     </div>`;
   },
   daily() {
@@ -662,7 +766,7 @@ const renderers = {
     const paused = pausedTasks();
     return `${reviewPlanCard()}${scheduleCard()}${loadPlanCard()}${resourcePlanCard()}<div class="card"><h2>今天照这个节奏</h2>${todayLoadProfile().template.map((item) => `<div class="history">${escapeHtml(item)}</div>`).join("")}</div>
       <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
-      ${optional.length ? `<div class="card"><h2>可选小动作</h2><p>做完必做还有余力，再选这里。没做也不算失败。</p></div><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div>` : ""}
+      ${optional.length ? `<div class="card"><h2>可选小动作</h2><p>做完必做还有余力，再选这里。没做也没关系。</p></div><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div>` : ""}
       ${paused.length ? `<div class="card"><h2>今日暂停</h2>${paused.map((task) => `<div class="history"><b>${task.icon} ${task.title}</b><br>${escapeHtml(taskLoadTarget(task))}</div>`).join("")}</div>` : ""}`;
   },
   materials() {
@@ -779,7 +883,7 @@ function bindAll() {
   });
   document.querySelectorAll("[data-done]").forEach((button) => {
     button.onclick = () => {
-      setDone(button.dataset.done, !state.done[button.dataset.done]);
+      handleDoneClick(button.dataset.done);
       renderPages(document.querySelector(".page.active")?.id || "home");
     };
   });
@@ -986,9 +1090,10 @@ function renderProgress() {
   const count = taskDoneCount();
   const total = requiredTasks().length || 1;
   const percent = Math.min(100, Math.round((count / total) * 100));
+  const voyage = voyageState();
   progressNum.textContent = `${percent}%`;
   bar.style.width = `${percent}%`;
-  progressText.textContent = count ? `今天完成 ${count}/${total} 项必做练习。` : `${todayLoadProfile().name}：先完成一项就很好。`;
+  progressText.textContent = `${voyage.countText} · ${voyage.nextText}`;
 }
 
 function pageText() {

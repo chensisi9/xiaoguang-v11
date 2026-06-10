@@ -167,7 +167,7 @@ app.post("/api/companion-chat", async (req, res) => {
     res.json({ ok: true, provider, reply: reply || "我在。我们先把这件事变小一点。" });
   } catch (error) {
     console.error("Companion chat error:", error);
-    res.status(500).json({ error: openai ? "大白生成回复失败，请检查 OpenAI Key、额度或模型权限。" : `本机 Ollama 还没准备好。请安装 Ollama 并运行：ollama pull ${ollamaModel}` });
+    res.status(500).json({ error: openai ? "大白暂时没连上，请检查 OpenAI Key、额度或模型权限。" : `本机 Ollama 还没准备好。请安装 Ollama 并运行：ollama pull ${ollamaModel}` });
   }
 });
 
@@ -200,7 +200,7 @@ app.post("/api/tts", async (req, res) => {
     res.send(buffer);
   } catch (error) {
     console.error("TTS error:", error);
-    res.status(500).json({ error: "生成高级语音失败，请检查 API Key、网络或模型权限。" });
+    res.status(500).json({ error: "高级语音暂时没连上，请检查 API Key、网络或模型权限。" });
   }
 });
 
