@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-voyage-diary";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-companion-room";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -18,8 +18,11 @@ function normalizeState(raw) {
   if (raw.date !== TODAY) {
     return {
       ...createInitialState(),
-      voyage: raw.voyage || { count: 0, lastKeptDate: "" },
+      voyage: raw.voyage || { count: 0, lastKeptDate: "", days: [] },
       growthDiary: raw.growthDiary || [],
+      battleReports: raw.battleReports || [],
+      badges: raw.badges || { earned: [], today: [] },
+      exploration: raw.exploration || { englishTasks: 0 },
       companion: {
         moments: raw.companion?.moments || [],
         conversation: raw.companion?.conversation || [],
@@ -44,8 +47,12 @@ function normalizeState(raw) {
     transfer: raw.transfer || {},
     dailyNotes: raw.dailyNotes || {},
     weekly: raw.weekly || {},
-    voyage: raw.voyage || { count: 0, lastKeptDate: "" },
+    voyage: raw.voyage || { count: 0, lastKeptDate: "", days: [] },
     growthDiary: raw.growthDiary || [],
+    battleReports: raw.battleReports || [],
+    badges: raw.badges || { earned: [], today: [] },
+    exploration: raw.exploration || { englishTasks: 0 },
+    feedbackBubble: raw.feedbackBubble || null,
     teacherFeedback: raw.teacherFeedback || [],
     dadNotes: raw.dadNotes || [],
     companion: {
@@ -137,6 +144,9 @@ export function snapshotToday() {
     dailyNotes: state.dailyNotes,
     voyage: state.voyage,
     growthDiary: state.growthDiary,
+    battleReports: state.battleReports,
+    badges: state.badges,
+    exploration: state.exploration,
     teacherFeedback: state.teacherFeedback,
     dadNotes: state.dadNotes,
     companion: state.companion

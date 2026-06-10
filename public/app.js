@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-voyage-diary";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-companion-room";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260610-voyage-diary";
+} from "./modules/state.js?v=20260610-companion-room";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -144,6 +144,22 @@ const luckyRewards = [
   "奖励：复盘星星 1 颗。不是因为做得多，是因为你留下了证据。"
 ];
 
+const badgeCatalog = [
+  { id: "mistake-hunter", icon: "🏅", name: "错因猎人", subjects: ["math", "chinese", "english"] },
+  { id: "steady-captain", icon: "🏅", name: "坚持船长", subjects: ["math", "english", "chinese", "harmonica", "tennis"] },
+  { id: "brave-voice", icon: "🏅", name: "勇敢开口", subjects: ["english", "chinese"] },
+  { id: "math-detective", icon: "🏅", name: "数学侦探", subjects: ["math"] },
+  { id: "english-explorer", icon: "🏅", name: "英语探险家", subjects: ["english"] }
+];
+
+const exploreCountries = [
+  ["中国", "🇨🇳"],
+  ["日本", "🇯🇵"],
+  ["澳洲", "🇦🇺"],
+  ["英国", "🇬🇧"],
+  ["美国", "🇺🇸"]
+];
+
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
 }
@@ -166,6 +182,13 @@ function dateDiffDays(fromDate, toDate = TODAY) {
   const from = new Date(`${fromDate}T00:00:00`);
   const to = new Date(`${toDate}T00:00:00`);
   return Math.round((to - from) / 86400000);
+}
+
+function addDays(dateString, offset) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + offset);
+  return date.toISOString().slice(0, 10);
 }
 
 function pickDaily(list, extra = 0) {
@@ -193,6 +216,52 @@ function drawLuckyReward() {
   save();
 }
 
+function ensureBadges() {
+  state.badges = state.badges || { earned: [], today: [] };
+  state.badges.earned = state.badges.earned || [];
+  state.badges.today = (state.badges.today || []).filter((badge) => badge.date === TODAY);
+  return state.badges;
+}
+
+function badgeLabel(badge) {
+  return badge ? `${badge.icon} ${badge.name}` : "";
+}
+
+function awardBadge(task) {
+  const badges = ensureBadges();
+  const candidates = badgeCatalog.filter((badge) => badge.subjects.includes(task.id));
+  if (!candidates.length || Math.random() > 0.42) return null;
+  const badge = candidates[Math.floor(Math.random() * candidates.length)];
+  const earned = { ...badge, date: TODAY, taskId: task.id, createdAt: new Date().toISOString() };
+  if (!badges.earned.some((item) => item.id === badge.id)) badges.earned.push(earned);
+  if (!badges.today.some((item) => item.id === badge.id)) badges.today.push(earned);
+  return earned;
+}
+
+function todayBadgesText() {
+  const today = ensureBadges().today;
+  return today.length ? today.map(badgeLabel).join("  ") : "还在巡航";
+}
+
+function explorationState() {
+  state.exploration = state.exploration || { englishTasks: 0 };
+  const count = state.exploration.englishTasks || 0;
+  const index = Math.min(exploreCountries.length - 1, Math.floor(count / 10));
+  const next = exploreCountries[Math.min(exploreCountries.length - 1, index + 1)];
+  return { count, index, next };
+}
+
+function renderExploreMap() {
+  const explore = explorationState();
+  const stepCount = explore.count % 10;
+  const stepText = explore.index >= exploreCountries.length - 1 ? "航线已到远方" : `${stepCount}/10`;
+  return `<div class="exploreMini">
+    <div class="tiny">🌎 探索进度 · 英语 ${stepText}</div>
+    <div class="countryRail">${exploreCountries.map(([name, flag], index) => `<span class="${index <= explore.index ? "active" : ""}">${name} ${flag}</span>`).join("<b>↓</b>")}</div>
+    <div class="tiny">每完成 10 个英语回合，解锁下一站。</div>
+  </div>`;
+}
+
 function completionRewardText() {
   const total = requiredTasks().length;
   if (!total || taskDoneCount() < total) return "";
@@ -206,11 +275,16 @@ function voyageState() {
   const waiting = !keptToday && voyage.count > 0 && dateDiffDays(voyage.lastKeptDate) > 1;
   const countText = waiting || !voyage.count ? "大白等你重新起航" : `第 ${voyage.count} 天`;
   const nextText = done >= 2 ? "今日稳定完成" : done >= 1 ? "航线保持成功" : "今日完成后：航线 +1";
-  return { countText, nextText, keptToday, waiting };
+  const days = Array.isArray(voyage.days) ? voyage.days : [];
+  const dots = Array.from({ length: 7 }, (_, index) => (days.includes(addDays(TODAY, index - 6)) ? "🟢" : "⚪")).join("");
+  return { countText, nextText, keptToday, waiting, dots };
 }
 
 function keepVoyageIfNeeded() {
-  state.voyage = state.voyage || { count: 0, lastKeptDate: "" };
+  state.voyage = state.voyage || { count: 0, lastKeptDate: "", days: [] };
+  state.voyage.days = state.voyage.days || [];
+  if (!state.voyage.days.includes(TODAY)) state.voyage.days.push(TODAY);
+  state.voyage.days = state.voyage.days.slice(-60);
   if (state.voyage.lastKeptDate === TODAY) return;
   state.voyage.count = dateDiffDays(state.voyage.lastKeptDate) === 1 ? (state.voyage.count || 0) + 1 : 1;
   state.voyage.lastKeptDate = TODAY;
@@ -239,6 +313,29 @@ function makeGrowthDiaryLine(task) {
   return `${dateLabel()}，八宝今天完成了${task.title}。${diaryMoodClause()}${taskSpecificDiary(task)}，航线保持成功。`;
 }
 
+function makeBattleRecord(task) {
+  if (task.id === "math") return ["今天抓到了一个小数陷阱。", "比多做10道题更有价值。"];
+  if (task.id === "english") return ["今天开口说了英语。", "声音先出来，后面就好改。"];
+  if (task.id === "chinese") return ["今天把画面说出来了。", "一句话变清楚，也算赢下一小局。"];
+  return ["今天留下了一个动作点。", "明天可以接着这个点走。"];
+}
+
+function updateBattleReport(task, badge = null) {
+  state.battleReports = state.battleReports || [];
+  let report = state.battleReports.find((item) => item.date === TODAY);
+  if (!report) {
+    report = { date: TODAY, status: "稳定航线", completed: [], badges: [], records: [] };
+    state.battleReports.unshift(report);
+  }
+  if (!report.completed.includes(task.id)) report.completed.push(task.id);
+  if (badge && !report.badges.includes(badgeLabel(badge))) report.badges.push(badgeLabel(badge));
+  const recordLines = makeBattleRecord(task);
+  recordLines.forEach((line) => {
+    if (!report.records.includes(line)) report.records.push(line);
+  });
+  state.battleReports = state.battleReports.slice(0, 30);
+}
+
 function addGrowthDiary(task) {
   state.growthDiary = state.growthDiary || [];
   let day = state.growthDiary.find((item) => item.date === TODAY);
@@ -260,6 +357,49 @@ function addGrowthDiary(task) {
 
 function recentDiaryDays(limit = 7) {
   return (state.growthDiary || []).slice(0, limit);
+}
+
+function latestReportBeforeToday() {
+  return (state.battleReports || []).find((report) => report.date !== TODAY);
+}
+
+function dabaiBuddyLines() {
+  const energy = { "很好": "⚡ 电量85%", "还行": "🔋 电量70%", "有点累": "🛡 电量45%", "不想学": "🌙 小引擎待机" }[state.weather || "还行"];
+  const last = latestReportBeforeToday();
+  const observations = last?.completed?.includes("math")
+    ? ["昨天数学留下了清楚的痕迹。", "大白记得你抓过一个小陷阱。", "你最近不是靠猛冲，是靠稳。"]
+    : ["今天先赢一个小回合就够。", "大白在这里，不催你。", "先开口，后面都好改。"];
+  const suggestions = {
+    "很好": ["先拿下数学，再去挑战英语。", "今天可以当一次小队长。"],
+    "还行": ["先做最短的一项，让航线亮起来。", "先拿一个小局，再看下一步。"],
+    "有点累": ["先做小版本，大白陪你慢一点。", "只改一个点就很好。"],
+    "不想学": ["先赢5分钟，不用解释太多。", "只开一个小口，大白就算你起航。"]
+  }[state.weather || "还行"];
+  return {
+    status: energy,
+    observation: pickDaily(observations, 3),
+    suggestion: pickDaily(suggestions, 5)
+  };
+}
+
+function renderDabaiBuddy() {
+  const lines = dabaiBuddyLines();
+  return `<aside class="dabaiBuddy">
+    <h3>🤖 大白</h3>
+    <p><b>今天状态：</b><br>${escapeHtml(lines.status)}</p>
+    <p><b>今天观察：</b><br>${escapeHtml(lines.observation)}</p>
+    <p><b>今天建议：</b><br>${escapeHtml(lines.suggestion)}</p>
+  </aside>`;
+}
+
+function renderOnePointBubble() {
+  const bubble = state.feedbackBubble;
+  if (!bubble) return "";
+  return `<div class="onePointBubble">
+    <b>👀 大白只看一个点</b>
+    <p>👍 ${escapeHtml(bubble.good)}</p>
+    <p>🎯 今天只改一个点：<br>${escapeHtml(bubble.focus)}</p>
+  </div>`;
 }
 
 const icapSteps = [
@@ -286,7 +426,17 @@ function markIcap(taskId, stage) {
   icapSteps.slice(0, rank).forEach(([key]) => (note.icapStages[key] = true));
   const task = state.tasks.find((item) => item.id === taskId);
   if (task) task.icap = stage;
-  if (stage === "I") note.feedback = buildTaskFeedback(task, note);
+  if (stage === "I") {
+    const feedback = buildOnePointFeedbackParts(task, note);
+    note.feedback = feedback.text;
+    state.feedbackBubble = {
+      taskId,
+      taskTitle: task?.title || "今天这一项",
+      good: feedback.good,
+      focus: feedback.focus,
+      createdAt: new Date().toISOString()
+    };
+  }
   save();
 }
 
@@ -295,7 +445,7 @@ function stageDone(task, stage) {
   return Boolean(note.icapStages?.[stage]) || icapRank(task.icap) >= icapRank(stage);
 }
 
-function buildTaskFeedback(task, note = {}) {
+function buildOnePointFeedbackParts(task, note = {}) {
   const answer = String(note.answer || "").trim();
   const explain = String(note.explain || "").trim();
   const subject = task?.id || "";
@@ -304,29 +454,40 @@ function buildTaskFeedback(task, note = {}) {
   const hasEnglish = /[a-z]/i.test(combined);
   const mentionsBecause = /\bbecause\b|因为|所以/.test(combined);
   const mentionsWhereWhen = /where|when|哪里|地点|时间|什么时候/i.test(combined);
-  if (!answer && !explain) return "八宝，先说出一点点，大白才能帮你改一个点。最低版本：只说一句“我是这样想的”。";
+  if (!answer && !explain) {
+    return {
+      good: "你已经来到这个回合了。",
+      focus: "先说一句“我是这样想的”。",
+      text: "八宝，先说出一点点，大白才能帮你改一个点。最低版本：只说一句“我是这样想的”。"
+    };
+  }
   const hasExplain = explain.length >= 8;
-  const observed = hasExplain ? "这次你说清楚了过程" : "这次你先把输出留下来了";
+  const good = hasExplain ? "你已经把过程说出来了。" : "你先把输出留下来了。";
+  let focus = "";
   if (subject === "math") {
-    const precise = !hasNumber ? "补上一个关键数字或单位" : hasExplain ? "最后答案可以再读慢一点，顺手检查单位" : "补一句第一步为什么这样列式";
-    return `八宝，${observed}。大白只提醒一个点：${precise}。`;
+    focus = !hasNumber ? "补上一个关键数字或单位。" : hasExplain ? "最后答案可以再读慢一点。" : "补一句第一步为什么这样列式。";
+    return { good, focus, text: `八宝，${good}大白只提醒一个点：${focus}` };
   }
   if (subject === "english") {
-    const precise = !hasEnglish
+    focus = !hasEnglish
       ? "先补一句最短英文，不追求长，主语 + 动作就可以"
       : mentionsWhereWhen
-        ? "where 管地点，when 管时间，先只选一个"
+        ? "where 管地点，when 管时间，先只选一个。"
         : mentionsBecause
-          ? "because 后面只接一个清楚理由"
-          : "只查一个点：句首大写或句末标点";
-    return `八宝，${observed}。大白只提醒一个点：${precise}。`;
+          ? "because 后面只接一个清楚理由。"
+          : "只查一个点：句首大写或句末标点。";
+    return { good, focus, text: `八宝，${good}大白只提醒一个点：${focus}` };
   }
   if (subject === "chinese") {
-    const precise = /画面|颜色|动作|心情|作者|人物/.test(combined) ? "保留这个画面，再补一个动作或感受" : "先说清楚画面里有什么";
-    return `八宝，${observed}。大白只提醒一个点：${precise}。`;
+    focus = /画面|颜色|动作|心情|作者|人物/.test(combined) ? "保留这个画面，再补一个动作或感受。" : "先说清楚画面里有什么。";
+    return { good, focus, text: `八宝，${good}大白只提醒一个点：${focus}` };
   }
-  const precise = hasExplain ? "把动作点缩成一个词，明天直接复用" : "补一句刚才哪个动作最顺";
-  return `八宝，${observed}。大白只提醒一个点：${precise}。`;
+  focus = hasExplain ? "把动作点缩成一个词，明天直接复用。" : "补一句刚才哪个动作最顺。";
+  return { good, focus, text: `八宝，${good}大白只提醒一个点：${focus}` };
+}
+
+function buildTaskFeedback(task, note = {}) {
+  return buildOnePointFeedbackParts(task, note).text;
 }
 
 function initNav() {
@@ -689,27 +850,39 @@ function weeklySummary() {
   return { days: week.length, feedbackCount, avg };
 }
 
-function renderGrowthDiary() {
-  const days = recentDiaryDays();
-  const body = days.length
-    ? days
-        .map((day) => `<div class="history"><b>${escapeHtml(dateLabel(day.date))}</b>${(day.entries || []).map((entry) => `<div class="diaryLine">${escapeHtml(entry.text)}</div>`).join("")}</div>`)
+function renderBattleReports() {
+  const reports = (state.battleReports || []).slice(0, 30);
+  const body = reports.length
+    ? reports
+        .map((report) => {
+          const completed = (report.completed || []).map((id) => `${taskNameById(id)}√`).join("  ") || "正在起航";
+          const badges = (report.badges || []).join("  ") || "今天的小回合";
+          const records = (report.records || []).map((line) => `<div class="diaryLine">${escapeHtml(line)}</div>`).join("");
+          return `<div class="history battleReport"><b>${escapeHtml(report.date)}</b><br>状态：${escapeHtml(report.status || "稳定航线")}<br>完成：${escapeHtml(completed)}<br>获得：${escapeHtml(badges)}<br><br><b>大白记录：</b>${records}</div>`;
+        })
         .join("")
-    : `<div class="history">大白今天还没写记录。完成任意一项后，这里会留下温和的一句话。</div>`;
+    : `<div class="history">今天完成任意一项后，大白会写一份很短的战报。</div>`;
   return `<details class="optionalBlock diaryBlock">
-    <summary>大白今日记录</summary>
-    <div class="tiny diaryHint">最近 7 天，大白只记录前进的小证据。</div>
+    <summary>📜 大白战报</summary>
+    <div class="tiny diaryHint">最近 30 天，只收藏赢下的小局。</div>
     ${body}
   </details>`;
 }
 
 function handleDoneClick(key) {
   const next = !state.done[key];
+  const wasDone = Boolean(state.done[key]);
   setDone(key, next);
   const task = taskByDoneKey(key);
   if (next && task) {
     if (requiredTasks().some((item) => item.id === task.id)) keepVoyageIfNeeded();
+    if (task.id === "english" && !wasDone) {
+      state.exploration = state.exploration || { englishTasks: 0 };
+      state.exploration.englishTasks = (state.exploration.englishTasks || 0) + 1;
+    }
+    const badge = awardBadge(task);
     addGrowthDiary(task);
+    updateBattleReport(task, badge);
     save();
   }
 }
@@ -739,11 +912,13 @@ const renderers = {
             <div class="pill">今日唤醒标题</div>
             <h2>${escapeHtml(todayWakeTitle())}</h2>
             <p>${escapeHtml(todayWakeHint())}</p>
-            <div class="voyageLine"><b>当前稳定航线：</b>${escapeHtml(voyage.countText)}<br><span>${escapeHtml(voyage.nextText)}</span></div>
+            <div class="voyageLine"><b>⚓ 航线</b><br><span class="voyageDots">${escapeHtml(voyage.dots)}</span><br><span>${escapeHtml(voyage.nextText)}</span></div>
+            ${renderExploreMap()}
           </div>
           <div class="rewardPanel">
             <div class="tiny">今日小奖励</div>
             <div class="rewardText">${escapeHtml(reward)}</div>
+            <div class="todayBadges"><span>今日获得：</span><br>${escapeHtml(todayBadgesText())}</div>
             <button class="primary rewardButton" id="luckyReward">幸运按钮</button>
           </div>
         </div>
@@ -757,7 +932,9 @@ const renderers = {
         <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
         ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
       </section>
-      ${renderGrowthDiary()}
+      ${renderBattleReports()}
+      ${renderDabaiBuddy()}
+      ${renderOnePointBubble()}
     </div>`;
   },
   daily() {
@@ -931,7 +1108,7 @@ function bindAll() {
   document.querySelectorAll("[data-task] [data-icap]").forEach((button) => {
     button.onclick = () => {
       markIcap(button.parentElement.dataset.task, button.dataset.icap);
-      renderPages("daily");
+      renderPages(document.querySelector(".page.active")?.id || "home");
     };
   });
   document.getElementById("quietBtn")?.addEventListener("click", () => {

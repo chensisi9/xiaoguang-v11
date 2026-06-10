@@ -16,27 +16,27 @@ export const defaultTasks = [
     id: "math",
     icon: "🔢",
     type: "数学",
-    title: "数学期末复习",
-    detail: "资料主线：人教版四年级下册数学。6月重点复习四则运算、运算律、小数、三角形和统计。",
-    target: "今日建议：人教四下 10道小数/简算 + 2道三角形/统计/应用题。只记录1个错因。",
+    title: "数学小局",
+    detail: "今天目标：抓住一个小数、简算或图形里的小陷阱。",
+    target: "🎯 今天目标：做一小组题，只留下1个最值得记住的错因。",
     icap: "A"
   },
   {
     id: "english",
     icon: "🗣️",
     type: "英语",
-    title: "英语期末复习",
-    detail: "资料主线：精通四年级下册英语。6月重点复习课本核心词句、问答句和易混词。",
-    target: "今日建议：精通四下听读1段 + 3组课本问答 + 3句输出。只改1个易混点。",
+    title: "英语开口局",
+    detail: "今天目标：说出几句完整英语，让嘴巴先动起来。",
+    target: "🎯 今天目标：听读一小段，说出3句自己的英语。",
     icap: "A"
   },
   {
     id: "chinese",
     icon: "📖",
     type: "语文",
-    title: "语文期末复习",
-    detail: "资料主线：人教版四年级下册语文。6月重点复习古诗文、课内阅读、词句和习作素材。",
-    target: "今日建议：人教四下 1首古诗/文言 + 1段课内阅读 + 3个词句。只改1个表达点。",
+    title: "语文画面局",
+    detail: "今天目标：把一句话、一首诗或一段阅读变成脑子里的画面。",
+    target: "🎯 今天目标：说清一个画面，再把一句话写具体。",
     icap: "A"
   },
   {
@@ -584,9 +584,19 @@ export function createInitialState() {
     },
     voyage: {
       count: 0,
-      lastKeptDate: ""
+      lastKeptDate: "",
+      days: []
     },
     growthDiary: [],
+    battleReports: [],
+    badges: {
+      earned: [],
+      today: []
+    },
+    exploration: {
+      englishTasks: 0
+    },
+    feedbackBubble: null,
     done: {}
   };
 }
