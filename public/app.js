@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-voice-coach";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-simple-blue-reward";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260610-voice-coach";
+} from "./modules/state.js?v=20260610-simple-blue-reward";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -110,12 +110,81 @@ const loadProfiles = {
   }
 };
 
+const wakeTitles = {
+  "很好": [
+    "蓝色 Ace 日：今天打主动球",
+    "八宝主场日：把会的打稳",
+    "小队长上线：今天抓一个陷阱"
+  ],
+  "还行": [
+    "标准推进日：少一点，但要准",
+    "稳住节奏日：三科各赢一小局",
+    "蓝色巡航日：不用猛冲，保持航线"
+  ],
+  "有点累": [
+    "低电量保护日：只做关键球",
+    "轻装上场日：少做也要留下痕迹",
+    "慢速胜利日：今天不拼量"
+  ],
+  "不想学": [
+    "最低启动日：先赢 5 分钟",
+    "破冰日：只开一个小口",
+    "不想学也能赢日：完成最小动作"
+  ]
+};
+
+const luckyRewards = [
+  "奖励：蓝色能量币 +3。用途：可以一本正经地宣布“我今天赢了一小局”。",
+  "奖励：错因猎人徽章。今天抓到一个错误，比多做十道糊涂题更值。",
+  "奖励：大白批准 30 秒胜利姿势。可以很低调，也可以像网球 Ace 一样点头。",
+  "奖励：脑力冷却券 1 张。喝水、伸懒腰、回来只改一个点。",
+  "奖励：小教练身份卡。下一题可以先让大人故意错一步，你来抓。",
+  "奖励：蓝色小闪电。今天的任务不是变完美，是保持前进。",
+  "奖励：一句通关口令：先完成，再变好。念完自动加一点勇气。",
+  "奖励：复盘星星 1 颗。不是因为做得多，是因为你留下了证据。"
+];
+
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
 }
 
 function safeId(value) {
   return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
+function daySeed(extra = 0) {
+  return TODAY.split("-").reduce((sum, part) => sum + Number(part), 0) + extra;
+}
+
+function pickDaily(list, extra = 0) {
+  if (!list?.length) return "";
+  return list[daySeed(extra) % list.length];
+}
+
+function todayWakeTitle() {
+  const key = state.weather || "还行";
+  return pickDaily(wakeTitles[key] || wakeTitles["还行"], taskDoneCount());
+}
+
+function todayWakeHint() {
+  const profile = todayLoadProfile();
+  const total = profile.required.length;
+  return `${profile.name}。今天只看 ${total} 个必做任务，完成后拿一个小奖励。`;
+}
+
+function drawLuckyReward() {
+  const index = Math.floor(Math.random() * luckyRewards.length);
+  state.dailyReward = {
+    text: luckyRewards[index],
+    createdAt: new Date().toISOString()
+  };
+  save();
+}
+
+function completionRewardText() {
+  const total = requiredTasks().length;
+  if (!total || taskDoneCount() < total) return "";
+  return "收工奖励：今天的必做项已经清掉。大白记录：八宝不是靠鸡血推进，是靠一小步一小步赢。";
 }
 
 const icapSteps = [
@@ -202,6 +271,7 @@ function renderPages(activeId = document.querySelector(".page.active")?.id || "h
 }
 
 function renderPage(page) {
+  if (page.kind === "home") return renderers.home();
   return `<div class="card"><h2>${page.icon} ${page.title}</h2><p>${page.hint}</p></div>${renderers[page.kind]?.() || ""}`;
 }
 
@@ -557,28 +627,33 @@ function materialCards(subject = "") {
 
 const renderers = {
   home() {
-    return `<div class="grid2">
-      <div class="card">
-        <h2>今天状态</h2>
-        <div class="choiceGrid">${choiceButtons("weather", [["很好", "可以正常练"], ["还行", "每项做短一点"], ["有点累", "只保留三项"], ["不想学", "先做一项最小动作"]])}</div>
-        <div class="quote">${companionTodayLine()}</div>
-        <label>想让大白记住的一句话</label>
-        <textarea id="companionMoment" placeholder="例如：今天数学审题有点烦，但我还是开始了。"></textarea>
-        <button class="primary secondary" id="saveCompanionMoment">让大白记住</button>
-        <button class="primary secondary" id="quietBtn">${state.companion?.quietMode ? "退出少说" : "少说陪伴"}</button>
-      </div>
-      ${scheduleCard()}
-      ${loadPlanCard()}
-      ${resourcePlanCard(true)}
-      ${reviewPlanCard(true)}
-      <div class="card">
-        <h2>今日任务会随状态变化</h2>
-        ${state.tasks.map((task) => {
-          const examples = taskExamples(task);
-          return `<div class="history"><b>${task.icon} ${task.title}</b> · ${taskLoadStatus(task)} · ${state.done?.[`task_${task.id}`] ? "已完成" : "未完成"}<br><span class="tiny">${escapeHtml(taskLoadTarget(task))}</span>${examples.length ? `<br><span class="tiny">例题：${escapeHtml(examples[0].point)} · ${escapeHtml(examples[0].prompt)}</span>` : ""}</div>`;
-        }).join("")}
-        <button class="primary" data-jump="daily">开始每日任务</button>
-      </div>
+    const required = requiredTasks();
+    const optional = optionalTasks();
+    const reward = completionRewardText() || state.dailyReward?.text || "点一下幸运按钮，拿一个小奖励。奖励不大，但要有一点满足感。";
+    return `<div class="simpleHome">
+      <section class="card focusCard">
+        <div class="focusTop">
+          <div>
+            <div class="pill">今日唤醒标题</div>
+            <h2>${escapeHtml(todayWakeTitle())}</h2>
+            <p>${escapeHtml(todayWakeHint())}</p>
+          </div>
+          <div class="rewardPanel">
+            <div class="tiny">今日小奖励</div>
+            <div class="rewardText">${escapeHtml(reward)}</div>
+            <button class="primary rewardButton" id="luckyReward">幸运按钮</button>
+          </div>
+        </div>
+        <div class="choiceGrid statusGrid">${choiceButtons("weather", [["很好", "完整训练"], ["还行", "标准短版"], ["有点累", "三科保底"], ["不想学", "最低启动"]])}</div>
+      </section>
+      <section class="todayTasks">
+        <div class="sectionTitle">
+          <div><div class="pill">根据今日状态生成</div><h2>今天只做这些</h2></div>
+          <div class="status">${taskDoneCount()}/${required.length || 1} 必做</div>
+        </div>
+        <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
+        ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
+      </section>
     </div>`;
   },
   daily() {
@@ -697,6 +772,11 @@ function bindAll() {
     };
   });
   document.querySelectorAll("[data-jump]").forEach((button) => (button.onclick = () => showPage(button.dataset.jump)));
+  document.getElementById("luckyReward")?.addEventListener("click", () => {
+    drawLuckyReward();
+    renderPages("home");
+    speak(state.dailyReward?.text || "");
+  });
   document.querySelectorAll("[data-done]").forEach((button) => {
     button.onclick = () => {
       setDone(button.dataset.done, !state.done[button.dataset.done]);
@@ -973,7 +1053,9 @@ function downloadJson(filename, data) {
 
 function title() {
   const date = new Date();
-  todayTitle.textContent = `${date.getMonth() + 1}月${date.getDate()}日 · 大白训练舱`;
+  todayTitle.textContent = `${date.getMonth() + 1}月${date.getDate()}日 · ${todayWakeTitle()}`;
+  const motto = document.getElementById("motto");
+  if (motto) motto.textContent = todayWakeHint();
 }
 
 document.getElementById("readPage").onclick = () => speak(pageText());
@@ -983,7 +1065,10 @@ document.getElementById("stopVoice").onclick = () => {
   if ("speechSynthesis" in window) speechSynthesis.cancel();
 };
 document.getElementById("exportBtn").onclick = () => downloadJson(`dabai-${TODAY}.json`, state);
-window.addEventListener("dabai:state-saved", renderProgress);
+window.addEventListener("dabai:state-saved", () => {
+  renderProgress();
+  title();
+});
 
 initNav();
 renderPages("home");

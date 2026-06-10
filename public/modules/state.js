@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-voice-coach";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-simple-blue-reward";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
