@@ -86,7 +86,7 @@ summary{cursor:pointer;color:#8cff6a;font-weight:900}
 <style>
 :root{--bg1:#050914;--bg2:#101a2f;--ink:#eef7ff;--muted:#92a7bd;--card:rgba(9,17,31,.82);--line:rgba(116,204,255,.22);--blue:#4cc9ff;--green:#67e8f9;--amber:#ffb84d;--red:#ff6b6b;--dark:#08111f;--soft:#0d1a2d}
 body{background:#050914;background-image:linear-gradient(180deg,rgba(76,201,255,.1),transparent 240px),linear-gradient(rgba(116,204,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(116,204,255,.055) 1px,transparent 1px),linear-gradient(135deg,#050914 0%,#0c1730 58%,#10131d 100%);background-size:100% 100%,34px 34px,34px 34px,100% 100%;color:var(--ink)}
-.app{max-width:980px;padding:18px}
+.app{max-width:1160px;padding:18px}
 .hero,.card,.footer{background:linear-gradient(180deg,rgba(13,26,47,.92),rgba(6,13,25,.9));border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(18px)}
 .hero{border-radius:8px;grid-template-columns:1fr 180px;padding:18px;margin-bottom:12px}
 .tag{background:rgba(76,201,255,.12);border:1px solid rgba(76,201,255,.38);color:#d8f6ff;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -100,10 +100,9 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .panel,.nav,.footer{display:none}
 .page{animation:fade .18s}
 .simpleHome{display:grid;gap:12px}
-.companionLayout{grid-template-columns:minmax(330px,430px) minmax(0,1fr);align-items:start}
+.companionLayout{grid-template-columns:minmax(300px,360px) minmax(0,1fr);align-items:start}
 .companionRail{position:sticky;top:12px;min-width:0}
 .companionStage{display:grid;gap:12px;min-width:0}
-.companionRail .focusTop{grid-template-columns:1fr}
 .companionRail .moduleGrid{grid-template-columns:repeat(2,1fr)}
 .companionRail .choiceGrid.statusGrid{grid-template-columns:repeat(2,1fr)}
 .card{border-radius:8px;padding:16px}
@@ -124,11 +123,11 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .moduleButton span{display:block;font-size:22px}
 .moduleButton b{display:block;margin-top:5px}
 .moduleButton small{display:block;margin-top:4px;color:#9fb4c8;line-height:1.35}
-.rewardPanel{background:rgba(255,184,77,.1);border:1px solid rgba(255,184,77,.32);border-radius:8px;padding:13px;display:flex;flex-direction:column;justify-content:space-between}
-.rewardText{font-size:15px;line-height:1.55;color:#ffe7b5;margin:8px 0}
-.rewardButton{margin-top:8px;background:linear-gradient(90deg,#ffb84d,#ffd166);color:#1a1205}
-.todayBadges{font-size:13px;line-height:1.5;color:#ffe7b5;border-top:1px solid rgba(255,184,77,.2);padding-top:9px;margin-top:8px}
-.todayBadges span{color:#9fb4c8}
+.companionPulse{margin-top:10px;border-radius:8px;background:rgba(255,184,77,.08);border:1px solid rgba(255,184,77,.22);padding:10px 12px}
+.companionPulse b,.companionPulse span,.companionPulse small{display:block}
+.companionPulse b{color:#ffcf7a;font-size:13px}
+.companionPulse span{color:#ffe7b5;margin-top:5px;line-height:1.45}
+.companionPulse small{color:#9fb4c8;margin-top:5px;line-height:1.35}
 .voyageLine{margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(76,201,255,.08);border:1px solid rgba(76,201,255,.22);color:#d8f6ff;line-height:1.55}
 .voyageLine span{color:#ffcf7a}
 .voyageDots{display:inline-block;font-size:18px;letter-spacing:2px;margin:2px 0}
@@ -167,7 +166,6 @@ textarea::placeholder,input::placeholder{color:#71869b}
 .voiceMini{background:rgba(76,201,255,.1);border-color:rgba(76,201,255,.28);color:#d8f6ff;border-radius:8px}
 .voiceMini.active{background:#4cc9ff;color:#06111f}
 .primary{border-radius:8px;background:#4cc9ff;color:#06111f}
-.primary.rewardButton{background:linear-gradient(90deg,#ffb84d,#ffd166);color:#1a1205}
 .secondary{background:rgba(255,255,255,.055)!important;color:#d8f6ff!important;border:1px solid rgba(116,204,255,.22)!important}
 .ladder{grid-template-columns:repeat(4,1fr)}
 .ladder button{text-align:center;background:rgba(255,255,255,.04);border-color:rgba(116,204,255,.22);color:#d8f6ff;border-radius:8px}
@@ -205,6 +203,6 @@ textarea::placeholder,input::placeholder{color:#71869b}
 <main id="pages"></main>
 <footer class="footer"><div>今天陪大白赢下一小局。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260611-left-right-2"></script>
+<script type="module" src="./app.js?v=20260611-layout-3"></script>
 </body>
 </html>

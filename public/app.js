@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260611-left-right-2";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260611-layout-3";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260611-left-right-2";
+} from "./modules/state.js?v=20260611-layout-3";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -132,17 +132,6 @@ const wakeTitles = {
     "不想学也能赢：完成最小动作"
   ]
 };
-
-const luckyRewards = [
-  "奖励：舰队能量币 +3。用途：可以一本正经地宣布“我今天赢了一小局”。",
-  "奖励：错因猎人徽章。今天抓到一个错误，比多做十道糊涂题更值。",
-  "奖励：大白批准 30 秒胜利姿势。可以很低调，也可以像网球 Ace 一样点头。",
-  "奖励：脑力冷却券 1 张。喝水、伸懒腰、回来只改一个点。",
-  "奖励：小教练身份卡。下一题可以先让大人故意错一步，你来抓。",
-  "奖励：冷光小闪电。今天的任务不是变完美，是保持前进。",
-  "奖励：一句通关口令：先完成，再变好。念完自动加一点勇气。",
-  "奖励：复盘星星 1 颗。不是因为做得多，是因为你留下了证据。"
-];
 
 const badgeCatalog = [
   { id: "mistake-hunter", icon: "🏅", name: "错因猎人", subjects: ["math", "chinese", "english"] },
@@ -385,15 +374,6 @@ function renderModulePanel() {
   if (module === "reading") return `<section class="card modulePanel"><div class="pill">📖 阅读</div><h2>阅读舱</h2><div class="history">今天只读一页也可以。RAZ、朗文、哈利波特，都算往前走。</div><div class="note blue">先听，再说一句发生了什么。</div></section>`;
   if (module === "chat") return `<section class="card modulePanel"><div class="pill">💬 聊天</div><h2>和大白说说</h2><div class="chatBox" id="chatBox">${renderConversation()}</div><label>直接跟大白说</label><textarea id="companionInput" placeholder="可以说：我今天不想学，或者我想先聊一下。"></textarea><div class="row"><button class="primary" id="voiceCompanion">🎙 开始说话</button><button class="secondary" id="sendCompanion">发送文字</button></div></section>`;
   return `<section class="card modulePanel quietPanel"><h2>想做什么？</h2><p>先选一个房间。学习、阅读、运动、探索、聊天，都算和大白一起往前走。</p></section>`;
-}
-
-function drawLuckyReward() {
-  const index = Math.floor(Math.random() * luckyRewards.length);
-  state.dailyReward = {
-    text: luckyRewards[index],
-    createdAt: new Date().toISOString()
-  };
-  save();
 }
 
 function ensureBadges() {
@@ -1081,30 +1061,24 @@ function materialCards(subject = "") {
 
 const renderers = {
   home() {
-    const reward = completionRewardText() || state.dailyReward?.text || "点一下幸运按钮，拿一个小奖励。奖励不大，但要有一点满足感。";
     const buddy = dabaiBuddyLines();
     return `<div class="simpleHome companionLayout">
       <aside class="companionRail">
         <section class="card focusCard companionHome">
-          <div class="focusTop companionTop">
-            <div>
-              <div class="pill">🤖 DABAI</div>
-              <h2>早上好，${escapeHtml(state.profile?.childName || "八宝")}。</h2>
-              <p class="dabaiLine">${escapeHtml(activePromptLine())}</p>
-              <div class="memoryLine">我记得：${escapeHtml(memoryLine())}</div>
-              <div class="dabaiStatusGrid">
-                <div><b>在线</b><span>第 ${onlineDayCount()} 天</span></div>
-                <div><b>今天状态</b><span>${escapeHtml(buddy.status)}</span></div>
-                <div><b>今天心情</b><span>${escapeHtml(dabaiMood())}</span></div>
-                <div><b>今天观察</b><span>${escapeHtml(buddy.observation)}</span></div>
-              </div>
-            </div>
-            <div class="rewardPanel">
-              <div class="tiny">大白在这里</div>
-              <div class="rewardText">${escapeHtml(reward)}</div>
-              <div class="todayBadges"><span>今日获得：</span><br>${escapeHtml(todayBadgesText())}</div>
-              <button class="primary rewardButton" id="luckyReward">幸运按钮</button>
-            </div>
+          <div class="pill">🤖 DABAI</div>
+          <h2>早上好，${escapeHtml(state.profile?.childName || "八宝")}。</h2>
+          <p class="dabaiLine">${escapeHtml(activePromptLine())}</p>
+          <div class="memoryLine">我记得：${escapeHtml(memoryLine())}</div>
+          <div class="dabaiStatusGrid">
+            <div><b>在线</b><span>第 ${onlineDayCount()} 天</span></div>
+            <div><b>今天状态</b><span>${escapeHtml(buddy.status)}</span></div>
+            <div><b>今天心情</b><span>${escapeHtml(dabaiMood())}</span></div>
+            <div><b>今天观察</b><span>${escapeHtml(buddy.observation)}</span></div>
+          </div>
+          <div class="companionPulse">
+            <b>今日信号</b>
+            <span>${escapeHtml(completionRewardText() || "选一个房间，赢下一小局。")}</span>
+            <small>徽章和故事会自动进入右侧成长宇宙。</small>
           </div>
           <div class="choiceGrid statusGrid">${choiceButtons("weather", [["很好", "状态不错"], ["还行", "正常巡航"], ["有点累", "低电量"], ["不想学", "先陪我"]])}</div>
           <h3 class="moduleQuestion">想做什么？</h3>
@@ -1235,11 +1209,6 @@ function bindAll() {
     };
   });
   document.querySelectorAll("[data-jump]").forEach((button) => (button.onclick = () => showPage(button.dataset.jump)));
-  document.getElementById("luckyReward")?.addEventListener("click", () => {
-    drawLuckyReward();
-    renderPages("home");
-    speak(state.dailyReward?.text || "");
-  });
   document.querySelectorAll("[data-module]").forEach((button) => {
     button.onclick = () => {
       state.activeModule = state.activeModule === button.dataset.module ? "" : button.dataset.module;
