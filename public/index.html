@@ -100,6 +100,12 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .panel,.nav,.footer{display:none}
 .page{animation:fade .18s}
 .simpleHome{display:grid;gap:12px}
+.companionLayout{grid-template-columns:minmax(330px,430px) minmax(0,1fr);align-items:start}
+.companionRail{position:sticky;top:12px;min-width:0}
+.companionStage{display:grid;gap:12px;min-width:0}
+.companionRail .focusTop{grid-template-columns:1fr}
+.companionRail .moduleGrid{grid-template-columns:repeat(2,1fr)}
+.companionRail .choiceGrid.statusGrid{grid-template-columns:repeat(2,1fr)}
 .card{border-radius:8px;padding:16px}
 .focusCard{padding:18px}
 .focusTop{display:grid;grid-template-columns:1fr 270px;gap:12px;align-items:stretch}
@@ -135,7 +141,7 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .choice.active{background:rgba(76,201,255,.15);border-color:#4cc9ff;color:#ffffff;box-shadow:0 0 0 1px rgba(76,201,255,.2),0 0 22px rgba(76,201,255,.1)}
 .choice .small{color:#9fb4c8}
 .sectionTitle{display:flex;justify-content:space-between;gap:10px;align-items:end;margin:8px 0 10px}
-.modulePanel{margin-top:0}
+.modulePanel{margin-top:0;min-width:0}
 .quietPanel p{color:#9fb4c8;line-height:1.6}
 .universeSnapshot{padding:16px}
 .universeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
@@ -179,7 +185,7 @@ textarea::placeholder,input::placeholder{color:#71869b}
 .onePointBubble{position:fixed;right:16px;bottom:205px;width:260px;z-index:21;border-radius:8px;padding:13px;background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.34);box-shadow:0 16px 45px rgba(0,0,0,.35);color:#ffe7b5}
 .onePointBubble b{display:block;color:#fff;margin-bottom:8px}
 .onePointBubble p{margin:8px 0 0;line-height:1.5;font-size:13px}
-@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid{grid-template-columns:1fr}.moduleGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
+@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid,.companionLayout{grid-template-columns:1fr}.companionRail{position:static}.moduleGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
 </style>
 </head>
 <body>
@@ -199,6 +205,6 @@ textarea::placeholder,input::placeholder{color:#71869b}
 <main id="pages"></main>
 <footer class="footer"><div>今天陪大白赢下一小局。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260610-dabai-home"></script>
+<script type="module" src="./app.js?v=20260611-left-right-2"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260610-dabai-home";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260611-left-right-2";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -57,7 +57,7 @@ function normalizeState(raw) {
     feedbackBubble: raw.feedbackBubble || null,
     profile: raw.profile || createInitialState().profile,
     dabai: raw.dabai || createInitialState().dabai,
-    activeModule: raw.activeModule || "",
+    activeModule: "",
     teacherFeedback: raw.teacherFeedback || [],
     dadNotes: raw.dadNotes || [],
     companion: {

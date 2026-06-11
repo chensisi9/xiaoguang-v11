@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260610-dabai-home";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260611-left-right-2";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260610-dabai-home";
+} from "./modules/state.js?v=20260611-left-right-2";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -371,7 +371,7 @@ function renderModulePanel() {
   const required = requiredTasks();
   const optional = optionalTasks();
   if (module === "learning") {
-    return `<section class="modulePanel">
+    return `<section class="card modulePanel">
       <div class="sectionTitle">
         <div><div class="pill">📚 训练室</div><h2>选一个小回合</h2></div>
         <div class="status">${taskDoneCount()}/${required.length || 1}</div>
@@ -1083,36 +1083,39 @@ const renderers = {
   home() {
     const reward = completionRewardText() || state.dailyReward?.text || "点一下幸运按钮，拿一个小奖励。奖励不大，但要有一点满足感。";
     const buddy = dabaiBuddyLines();
-    return `<div class="simpleHome">
-      <section class="card focusCard companionHome">
-        <div class="focusTop companionTop">
-          <div>
-            <div class="pill">🤖 DABAI</div>
-            <h2>早上好，${escapeHtml(state.profile?.childName || "八宝")}。</h2>
-            <p class="dabaiLine">${escapeHtml(activePromptLine())}</p>
-            <div class="memoryLine">我记得：${escapeHtml(memoryLine())}</div>
-            <div class="dabaiStatusGrid">
-              <div><b>在线</b><span>第 ${onlineDayCount()} 天</span></div>
-              <div><b>今天状态</b><span>${escapeHtml(buddy.status)}</span></div>
-              <div><b>今天心情</b><span>${escapeHtml(dabaiMood())}</span></div>
-              <div><b>今天观察</b><span>${escapeHtml(buddy.observation)}</span></div>
+    return `<div class="simpleHome companionLayout">
+      <aside class="companionRail">
+        <section class="card focusCard companionHome">
+          <div class="focusTop companionTop">
+            <div>
+              <div class="pill">🤖 DABAI</div>
+              <h2>早上好，${escapeHtml(state.profile?.childName || "八宝")}。</h2>
+              <p class="dabaiLine">${escapeHtml(activePromptLine())}</p>
+              <div class="memoryLine">我记得：${escapeHtml(memoryLine())}</div>
+              <div class="dabaiStatusGrid">
+                <div><b>在线</b><span>第 ${onlineDayCount()} 天</span></div>
+                <div><b>今天状态</b><span>${escapeHtml(buddy.status)}</span></div>
+                <div><b>今天心情</b><span>${escapeHtml(dabaiMood())}</span></div>
+                <div><b>今天观察</b><span>${escapeHtml(buddy.observation)}</span></div>
+              </div>
+            </div>
+            <div class="rewardPanel">
+              <div class="tiny">大白在这里</div>
+              <div class="rewardText">${escapeHtml(reward)}</div>
+              <div class="todayBadges"><span>今日获得：</span><br>${escapeHtml(todayBadgesText())}</div>
+              <button class="primary rewardButton" id="luckyReward">幸运按钮</button>
             </div>
           </div>
-          <div class="rewardPanel">
-            <div class="tiny">大白在这里</div>
-            <div class="rewardText">${escapeHtml(reward)}</div>
-            <div class="todayBadges"><span>今日获得：</span><br>${escapeHtml(todayBadgesText())}</div>
-            <button class="primary rewardButton" id="luckyReward">幸运按钮</button>
-          </div>
-        </div>
-        <div class="choiceGrid statusGrid">${choiceButtons("weather", [["很好", "状态不错"], ["还行", "正常巡航"], ["有点累", "低电量"], ["不想学", "先陪我"]])}</div>
-        <h3 class="moduleQuestion">想做什么？</h3>
-        ${renderModuleLaunchers()}
+          <div class="choiceGrid statusGrid">${choiceButtons("weather", [["很好", "状态不错"], ["还行", "正常巡航"], ["有点累", "低电量"], ["不想学", "先陪我"]])}</div>
+          <h3 class="moduleQuestion">想做什么？</h3>
+          ${renderModuleLaunchers()}
+        </section>
+      </aside>
+      <section class="companionStage">
+        ${renderModulePanel()}
+        ${renderUniverseSnapshot()}
+        ${renderBattleReports()}
       </section>
-      ${renderUniverseSnapshot()}
-      ${renderModulePanel()}
-      ${renderBattleReports()}
-      ${renderDabaiBuddy()}
       ${renderOnePointBubble()}
     </div>`;
   },
