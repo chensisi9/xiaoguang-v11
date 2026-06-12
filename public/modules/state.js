@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260612-english-route-1";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260612-curriculum-1";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -29,6 +29,10 @@ function normalizeState(raw) {
       bodyLog: raw.bodyLog?.date === TODAY ? raw.bodyLog : createInitialState().bodyLog,
       englishExplore: raw.englishExplore || { ...createInitialState().englishExplore, totalRounds: raw.exploration?.englishTasks || 0 },
       growthUniverse: raw.growthUniverse || createInitialState().growthUniverse,
+      learningSubject: raw.learningSubject || "math",
+      learningOutput: raw.learningOutput || {},
+      learningFeedback: raw.learningFeedback || {},
+      masteryLog: raw.masteryLog || [],
       phrases: raw.phrases || createInitialState().phrases,
       dabai: raw.dabai || createInitialState().dabai,
       companion: {
@@ -67,6 +71,10 @@ function normalizeState(raw) {
     bodyLog: raw.bodyLog || createInitialState().bodyLog,
     englishExplore: raw.englishExplore || { ...createInitialState().englishExplore, totalRounds: raw.exploration?.englishTasks || 0 },
     growthUniverse: raw.growthUniverse || createInitialState().growthUniverse,
+    learningSubject: raw.learningSubject || "math",
+    learningOutput: raw.learningOutput || {},
+    learningFeedback: raw.learningFeedback || {},
+    masteryLog: raw.masteryLog || [],
     phrases: raw.phrases || createInitialState().phrases,
     dabai: raw.dabai || createInitialState().dabai,
     activeModule: "",

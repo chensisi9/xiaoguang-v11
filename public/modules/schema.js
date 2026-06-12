@@ -663,6 +663,10 @@ export function createInitialState() {
     exploration: {
       englishTasks: 0
     },
+    learningSubject: "math",
+    learningOutput: {},
+    learningFeedback: {},
+    masteryLog: [],
     feedbackBubble: null,
     done: {}
   };

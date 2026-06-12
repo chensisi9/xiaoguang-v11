@@ -1,7 +1,9 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-english-route-1";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-curriculum-1";
 import { bodyPhrases, encouragementPhrases, getDailyDabaiLine, getRoomPhrase, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-phrases-1";
 import { renderEnglishExploreRoom } from "./modules/EnglishExploreRoom.js?v=20260612-english-route-1";
 import { getDailyEnglishTask, getEnglishOnePointFeedback } from "./modules/englishPlan.js?v=20260612-english-route-1";
+import { renderContentLibrary, renderLearningRoom } from "./modules/LearningRoom.js?v=20260612-curriculum-1";
+import { generateDailyLearningTask, generateOnePointFeedback, nextReviewDate } from "./modules/curriculumEngine.js?v=20260612-curriculum-1";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -16,7 +18,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260612-english-route-1";
+} from "./modules/state.js?v=20260612-curriculum-1";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -537,14 +539,7 @@ function renderModulePanel() {
   const required = requiredTasks().filter((task) => ["math", "english", "chinese"].includes(task.id));
   const optional = optionalTasks().filter((task) => ["math", "english", "chinese"].includes(task.id));
   if (module === "learning") {
-    return `<section class="card modulePanel">
-      <div class="sectionTitle">
-        <div><div class="pill">📚 学习小局</div><h2>每天只解决一个小问题</h2></div>
-        <div class="status">${taskDoneCount()}/${required.length || 1}</div>
-      </div>
-      <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
-      ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
-    </section>`;
+    return renderLearningRoom({ state, today: TODAY, energyMode: englishMode(), escapeHtml });
   }
   if (module === "english") return renderEnglishExploreRoom({ state, today: TODAY, energyMode: englishMode(), renderEnglishProgress, escapeHtml });
   if (module === "body") return `<section class="card modulePanel">
@@ -1357,7 +1352,7 @@ const renderers = {
         <div class="note blue">朗文 1A-6B 只作为长期听说和句型复现补充，不进入6月期末主计划。</div>
         ${longmanMaterials.map((item) => `<div class="history"><b>${escapeHtml(item.title)}</b> · ${item.pages} 页<br><span class="tiny">${escapeHtml(item.coachingUse)}</span></div>`).join("")}
       </div>
-    </div>`;
+    </div>${renderContentLibrary({ state, escapeHtml })}`;
   },
   companion() {
     return `<div class="grid2">
@@ -1450,6 +1445,13 @@ function bindAll() {
       state.activeModule = state.activeModule === button.dataset.module ? "" : button.dataset.module;
       state.dailyState = state.dailyState || {};
       state.dailyState.selectedRoom = state.activeModule;
+      save();
+      renderPages("home");
+    };
+  });
+  document.querySelectorAll("[data-learning-subject]").forEach((button) => {
+    button.onclick = () => {
+      state.learningSubject = button.dataset.learningSubject || "math";
       save();
       renderPages("home");
     };
@@ -1571,6 +1573,60 @@ function bindAll() {
       if (id === "englishExploreReflection") english.reflection = input.value;
       save();
     };
+  });
+  document.querySelector("[data-learning-output]")?.addEventListener("input", (event) => {
+    state.learningOutput = state.learningOutput || {};
+    state.learningOutput[event.target.dataset.learningOutput] = event.target.value;
+    save();
+  });
+  document.querySelector("[data-learning-complete]")?.addEventListener("click", (event) => {
+    const subject = state.learningSubject || "math";
+    const task = generateDailyLearningTask({
+      date: TODAY,
+      subject,
+      energyMode: englishMode(),
+      interestTag: subject === "englishSchool" ? "world" : "tennis",
+      recentMasteryLog: state.masteryLog || []
+    });
+    const output = document.getElementById("learningOutput")?.value.trim() || "";
+    const feedback = generateOnePointFeedback({
+      userOutput: output,
+      lessonContent: task.lesson,
+      subject: task.lesson?.subject || "math",
+      focusSkill: task.feedbackRules?.[0]?.target || ""
+    });
+    state.learningOutput = state.learningOutput || {};
+    state.learningFeedback = state.learningFeedback || {};
+    state.masteryLog = state.masteryLog || [];
+    state.learningOutput[task.id] = output;
+    state.learningFeedback[task.id] = feedback;
+    const existingAttempts = state.masteryLog.filter((item) => item.lessonId === task.lesson?.id && item.masteryTag === feedback.masteryTag).length;
+    const mastered = Boolean(output) && (
+      task.lesson?.subject === "math"
+        ? /因为|估算|对齐|小数点|单位/.test(output)
+        : task.lesson?.subject === "chinese"
+          ? /画面|主要|表现|仿写|感受/.test(output)
+          : /on Friday|because|usually|I heard|I think/i.test(output)
+    );
+    state.masteryLog.unshift({
+      id: crypto.randomUUID(),
+      date: TODAY,
+      subject: task.subject,
+      lessonId: task.lesson?.id || task.sourceLessons[0],
+      taskTitle: task.title,
+      focusSkill: feedback.masteryTag,
+      userOutput: output,
+      onePointFocus: feedback.onePoint,
+      masteryTag: feedback.masteryTag,
+      mastered,
+      nextReviewDate: nextReviewDate(TODAY, existingAttempts + 1, mastered)
+    });
+    state.masteryLog = state.masteryLog.slice(0, 365);
+    state.dailyState = state.dailyState || {};
+    state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "learning"])];
+    save();
+    renderPages("home");
+    speak(`${feedback.praise}${feedback.onePoint}${feedback.example ? `例：${feedback.example}` : ""}`);
   });
   document.querySelectorAll("[data-voice-target]").forEach((button) => {
     button.onclick = () => startVoiceToField(button.dataset.voiceTarget, button);
