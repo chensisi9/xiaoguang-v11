@@ -111,6 +111,7 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .baseCard .moduleButton{text-align:center;min-height:96px}
 .baseCard .moduleButton span{font-size:30px}
 .baseCard .moduleButton small{display:none}
+.universeLink{margin-top:14px;border:1px solid rgba(116,204,255,.18);background:rgba(255,255,255,.035);color:#9fb4c8;border-radius:8px;padding:10px 12px;font-weight:850;cursor:pointer}
 .roomShell{display:grid;gap:12px}
 .roomTop{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
 .roomTop h2{margin:5px 0;color:#f7fbff}
@@ -147,6 +148,7 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .countryRail span.active{color:#d8f6ff}
 .countryRail b{color:#4cc9ff;font-weight:900}
 .choiceGrid.statusGrid{grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.bodyStatusGrid{grid-template-columns:repeat(3,1fr)}
 .choice{background:rgba(255,255,255,.045);border-color:rgba(116,204,255,.22);color:#eef7ff;border-radius:8px}
 .choice.active{background:rgba(76,201,255,.15);border-color:#4cc9ff;color:#ffffff;box-shadow:0 0 0 1px rgba(76,201,255,.2),0 0 22px rgba(76,201,255,.1)}
 .choice .small{color:#9fb4c8}
@@ -179,6 +181,7 @@ textarea::placeholder,input::placeholder{color:#71869b}
 .voiceMini{background:rgba(76,201,255,.1);border-color:rgba(76,201,255,.28);color:#d8f6ff;border-radius:8px}
 .voiceMini.active{background:#4cc9ff;color:#06111f}
 .primary{border-radius:8px;background:#4cc9ff;color:#06111f}
+.roomVoice{width:auto!important;margin:6px 0 8px}
 .secondary{background:rgba(255,255,255,.055)!important;color:#d8f6ff!important;border:1px solid rgba(116,204,255,.22)!important}
 .ladder{grid-template-columns:repeat(4,1fr)}
 .ladder button{text-align:center;background:rgba(255,255,255,.04);border-color:rgba(116,204,255,.22);color:#d8f6ff;border-radius:8px}
@@ -196,7 +199,7 @@ textarea::placeholder,input::placeholder{color:#71869b}
 .onePointBubble{position:fixed;right:16px;bottom:205px;width:260px;z-index:21;border-radius:8px;padding:13px;background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.34);box-shadow:0 16px 45px rgba(0,0,0,.35);color:#ffe7b5}
 .onePointBubble b{display:block;color:#fff;margin-bottom:8px}
 .onePointBubble p{margin:8px 0 0;line-height:1.5;font-size:13px}
-@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid,.companionLayout,.roomTop{grid-template-columns:1fr}.companionRail{position:static}.moduleGrid,.baseCard .moduleGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.baseCard{padding:18px}.baseCard h2{font-size:28px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
+@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid,.companionLayout,.roomTop{grid-template-columns:1fr}.companionRail{position:static}.moduleGrid,.baseCard .moduleGrid,.bodyStatusGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.baseCard{padding:18px}.baseCard h2{font-size:28px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
 </style>
 </head>
 <body>
@@ -216,6 +219,6 @@ textarea::placeholder,input::placeholder{color:#71869b}
 <main id="pages"></main>
 <footer class="footer"><div>今天陪大白赢下一小局。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260612-calm-home"></script>
+<script type="module" src="./app.js?v=20260612-growth-3"></script>
 </body>
 </html>

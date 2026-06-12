@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260612-calm-home";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260612-growth-3";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -24,6 +24,12 @@ function normalizeState(raw) {
       badges: raw.badges || { earned: [], today: [] },
       exploration: raw.exploration || { englishTasks: 0 },
       profile: raw.profile || createInitialState().profile,
+      userProfile: raw.userProfile || createInitialState().userProfile,
+      dailyState: { ...createInitialState().dailyState, ...(raw.dailyState || {}), date: TODAY, selectedRoom: "", completedRooms: raw.dailyState?.completedRooms || [] },
+      bodyLog: raw.bodyLog?.date === TODAY ? raw.bodyLog : createInitialState().bodyLog,
+      englishExplore: raw.englishExplore || { ...createInitialState().englishExplore, totalRounds: raw.exploration?.englishTasks || 0 },
+      growthUniverse: raw.growthUniverse || createInitialState().growthUniverse,
+      phrases: raw.phrases || createInitialState().phrases,
       dabai: raw.dabai || createInitialState().dabai,
       companion: {
         moments: raw.companion?.moments || [],
@@ -56,6 +62,12 @@ function normalizeState(raw) {
     exploration: raw.exploration || { englishTasks: 0 },
     feedbackBubble: raw.feedbackBubble || null,
     profile: raw.profile || createInitialState().profile,
+    userProfile: raw.userProfile || createInitialState().userProfile,
+    dailyState: { ...createInitialState().dailyState, ...(raw.dailyState || {}), date: TODAY, selectedRoom: "" },
+    bodyLog: raw.bodyLog || createInitialState().bodyLog,
+    englishExplore: raw.englishExplore || { ...createInitialState().englishExplore, totalRounds: raw.exploration?.englishTasks || 0 },
+    growthUniverse: raw.growthUniverse || createInitialState().growthUniverse,
+    phrases: raw.phrases || createInitialState().phrases,
     dabai: raw.dabai || createInitialState().dabai,
     activeModule: "",
     teacherFeedback: raw.teacherFeedback || [],
@@ -152,6 +164,12 @@ export function snapshotToday() {
     battleReports: state.battleReports,
     badges: state.badges,
     exploration: state.exploration,
+    userProfile: state.userProfile,
+    dailyState: state.dailyState,
+    bodyLog: state.bodyLog,
+    englishExplore: state.englishExplore,
+    growthUniverse: state.growthUniverse,
+    phrases: state.phrases,
     profile: state.profile,
     dabai: state.dabai,
     activeModule: state.activeModule,

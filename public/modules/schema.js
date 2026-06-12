@@ -589,6 +589,53 @@ export function createInitialState() {
       habits: ["喜欢当小教练", "吃软不吃硬", "先说出来更容易开始"],
       recent: ["数学状态不错"]
     },
+    userProfile: {
+      name: "八宝",
+      age: 10,
+      goals: ["未来出国", "学习体育双不误"],
+      interests: ["网球", "探索世界", "运动", "口琴"],
+      preferences: ["不喜欢被催", "喜欢自己发现答案"]
+    },
+    dailyState: {
+      date: TODAY,
+      mood: "",
+      energy: "",
+      bodyStatus: "",
+      hasPEClass: false,
+      hasTennisClass: false,
+      outdoorAvailable: true,
+      selectedRoom: "",
+      completedRooms: []
+    },
+    bodyLog: {
+      date: TODAY,
+      status: "",
+      suggestion: "",
+      completedActivity: "",
+      durationMinutes: 0,
+      note: ""
+    },
+    englishExplore: {
+      totalRounds: 0,
+      currentCountry: "中国",
+      unlockedCountries: ["中国"],
+      lastTask: ""
+    },
+    growthUniverse: {
+      routeDays: 0,
+      badges: [],
+      dailyStories: [],
+      bodyLogs: [],
+      englishProgress: []
+    },
+    phrases: {
+      greeting: "",
+      memory: "",
+      encouragement: "",
+      action: "",
+      body: "",
+      english: ""
+    },
     dabai: {
       name: "大白",
       onlineSince: TODAY,

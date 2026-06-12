@@ -1,4 +1,5 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-calm-home";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-growth-3";
+import { actionPhrases, bodyPhrases, encouragementPhrases, englishPhrases, greetingPhrases, memoryPhrases, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-growth-3";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +14,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260612-calm-home";
+} from "./modules/state.js?v=20260612-growth-3";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -150,11 +151,11 @@ const exploreCountries = [
 ];
 
 const moduleLaunchers = [
-  ["learning", "📚", "学习", "训练室"],
-  ["music", "🎵", "音乐", "口琴舱"],
-  ["sport", "🎾", "运动", "网球舱"],
-  ["explore", "🌍", "探索", "世界舱"],
-  ["chat", "💬", "聊天", "大白在线"]
+  ["learning", "📚", "学习小局", "一个小问题"],
+  ["english", "🌍", "英语探索", "去远方"],
+  ["body", "🎾", "身体舱", "身体上线"],
+  ["music", "🎵", "音乐舱", "口琴一段"],
+  ["chat", "💬", "聊聊天", "大白在听"]
 ];
 
 const dabaiPromptLines = [
@@ -319,7 +320,7 @@ function dabaiMood() {
 }
 
 function activePromptLine() {
-  return pickDaily(dabaiPromptLines, taskDoneCount() + (state.weather || "").length);
+  return seededPhrase(encouragementPhrases, daySeed(), taskDoneCount() + (state.weather || "").length);
 }
 
 function memoryLine() {
@@ -343,15 +344,19 @@ function renderModuleLaunchers() {
 }
 
 function moduleTitle(id) {
+  if (id === "universe") return "📜 成长宇宙";
   const found = moduleLaunchers.find(([moduleId]) => moduleId === id);
   return found ? `${found[1]} ${found[2]}` : "🤖 大白";
 }
 
 function homeDabaiLines() {
+  const seed = daySeed();
+  const day = new Date(TODAY).getDay();
+  const weeklySportsMemory = day === 1 || day === 4 ? "我记得你和爸爸说过：学习体育双不误。" : "";
   return [
-    memoryLine(),
-    activePromptLine(),
-    completionRewardText() || "今天先赢一小局？"
+    seededPhrase(greetingPhrases, seed, 1),
+    weeklySportsMemory || seededPhrase(memoryPhrases, seed, 7),
+    seededPhrase(actionPhrases, seed, 13)
   ];
 }
 
@@ -359,6 +364,125 @@ function roomTasks(ids) {
   const requiredIds = requiredTasks().map((task) => task.id);
   const sorted = state.tasks.filter((task) => ids.includes(task.id));
   return sorted.sort((a, b) => requiredIds.indexOf(b.id) - requiredIds.indexOf(a.id));
+}
+
+const bodyStatusOptions = [
+  ["full", "⚡ 精力满满"],
+  ["normal", "🙂 正常"],
+  ["tired", "😴 有点累"],
+  ["sick", "🤒 不舒服"],
+  ["pe", "🏫 今天有体育课"],
+  ["tennis", "🎾 今天有网球课"],
+  ["rain", "🌧️ 今天不适合户外"]
+];
+
+function ensureEnglishExplore() {
+  state.englishExplore = state.englishExplore || { totalRounds: state.exploration?.englishTasks || 0, currentCountry: "中国", unlockedCountries: ["中国"], lastTask: "" };
+  const total = state.englishExplore.totalRounds || 0;
+  const index = Math.min(exploreCountries.length - 1, Math.floor(total / 10));
+  state.englishExplore.currentCountry = exploreCountries[index][0];
+  state.englishExplore.unlockedCountries = exploreCountries.slice(0, index + 1).map(([name]) => name);
+  return state.englishExplore;
+}
+
+function englishMode() {
+  if (state.weather === "很好") return "high";
+  if (state.weather === "有点累" || state.weather === "不想学") return "low";
+  return "normal";
+}
+
+function englishExploreTask() {
+  const mode = englishMode();
+  const tasks = {
+    low: [
+      "只说一句：I feel ___ today.",
+      "跟读一句：I can try.",
+      "说一个今天看到的东西：I see a ___."
+    ],
+    normal: [
+      "说3句今天发生的事。",
+      "用英语介绍一个喜欢的运动。",
+      "用英语说今天想去哪个国家。"
+    ],
+    high: [
+      "进行2分钟英语问答。",
+      "用英语讲一个小故事。",
+      "用英语介绍网球或学校的一件事。"
+    ]
+  };
+  return pickDaily(tasks[mode], 22);
+}
+
+function renderEnglishProgress() {
+  const english = ensureEnglishExplore();
+  return `<div class="exploreMini">
+    <b>🌍 英语探索进度 · ${english.totalRounds || 0}/10</b>
+    <div class="countryRail">${exploreCountries.map(([name, flag], index) => {
+      const active = english.unlockedCountries?.includes(name);
+      return `${index ? "<b>↓</b>" : ""}<span class="${active ? "active" : ""}">${name} ${flag}</span>`;
+    }).join("")}</div>
+    <div class="tiny">每完成 10 个英语回合，解锁下一站。</div>
+  </div>`;
+}
+
+function bodySuggestion(status = state.dailyState?.bodyStatus || "normal") {
+  const label = bodyStatusOptions.find(([id]) => id === status)?.[1]?.replace(/^[^\s]+\s*/, "") || "正常";
+  if (status === "pe") return {
+    label: "今天有体育课",
+    advice: "体育课已经让身体上线了。",
+    options: ["放学后户外走10分钟", "睡前拉伸3分钟", "看远处10分钟，让眼睛休息"],
+    reminder: "今天不用额外加练，身体恢复也很重要。"
+  };
+  if (status === "tennis") return {
+    label: "今天有网球课",
+    advice: "网球课已经算身体主任务。",
+    options: ["课后慢走10分钟", "小腿和肩膀轻松拉伸3分钟", "早点喝水休息"],
+    reminder: "今天不叠加训练，只收好一个动作感觉。"
+  };
+  if (status === "sick") return {
+    label,
+    advice: "今天不安排训练，先观察身体。",
+    options: ["喝水休息", "告诉爸爸妈妈哪里不舒服", "如果疼痛或发热，先停下来"],
+    reminder: "不舒服时，休息就是正确选择。"
+  };
+  if (status === "rain") return {
+    label,
+    advice: "今天换成室内轻活动。",
+    options: ["室内拉伸5分钟", "原地协调小游戏", "看远处窗外10分钟"],
+    reminder: "不要剧烈跑跳扰民，轻一点就好。"
+  };
+  if (status === "tired") return {
+    label,
+    advice: "今天低电量，只让身体轻轻上线。",
+    options: ["户外走10分钟", "远眺10分钟", "轻松挥拍20次"],
+    reminder: "只选一个就够，不要全做。"
+  };
+  if (status === "full") return {
+    label,
+    advice: "今天可以多动一点，但不用练狠。",
+    options: ["户外60-90分钟", "网球练习30分钟", "灵敏小游戏10分钟"],
+    reminder: "保持舒服，不训练到疼痛。"
+  };
+  return {
+    label,
+    advice: "今天适合轻松动一动。",
+    options: ["网球挥拍50次", "户外走30分钟", "投篮50次"],
+    reminder: "选一个就够。完成后告诉大白你做了什么。"
+  };
+}
+
+function renderBodySuggestion() {
+  const suggestion = bodySuggestion();
+  return `<div class="bodyAdvice">
+    <h3>🎾 今日身体建议</h3>
+    <div class="history"><b>状态：</b>${escapeHtml(suggestion.label)}</div>
+    <div class="note green"><b>大白建议：</b><br>${escapeHtml(suggestion.advice)}</div>
+    <div class="history"><b>今日可选：</b><br>${suggestion.options.map((item, index) => `${index + 1}. ${escapeHtml(item)}`).join("<br>")}</div>
+    <div class="note blue"><b>大白提醒：</b><br>${escapeHtml(suggestion.reminder)}</div>
+    <label>完成后告诉大白你做了什么</label>
+    <textarea id="bodyActivityInput" placeholder="例如：户外走了20分钟，远眺10分钟。">${escapeHtml(state.bodyLog?.completedActivity || "")}</textarea>
+    <button class="primary" data-body-complete>收进身体记录</button>
+  </div>`;
 }
 
 function renderUniverseSnapshot() {
@@ -381,16 +505,41 @@ function renderModulePanel() {
   if (module === "learning") {
     return `<section class="card modulePanel">
       <div class="sectionTitle">
-        <div><div class="pill">📚 训练室</div><h2>选一个小回合</h2></div>
+        <div><div class="pill">📚 学习小局</div><h2>每天只解决一个小问题</h2></div>
         <div class="status">${taskDoneCount()}/${required.length || 1}</div>
       </div>
       <div class="taskList">${required.map((task) => taskCard(task)).join("")}</div>
       ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
     </section>`;
   }
+  if (module === "english") return `<section class="card modulePanel">
+    <div class="pill">🌍 英语探索舱</div>
+    <h2>${escapeHtml(pickDaily(englishPhrases, 31))}</h2>
+    <p>英语不是普通学科，是通往世界的工具。</p>
+    ${renderEnglishProgress()}
+    <div class="task card">
+      <div class="taskTop"><div class="icon">🌍</div><div class="pill">英语回合</div></div>
+      <h2>今天只开口一点</h2>
+      <p class="oneSentence">${escapeHtml(englishExploreTask())}</p>
+      <details class="taskDetails">
+        <summary>开始英语探索</summary>
+        <label>🎙️ 说给大白听</label>
+        <textarea id="englishExploreInput" placeholder="可以说一句英文，也可以先写下来。">${escapeHtml(state.englishExplore?.lastTask || "")}</textarea>
+        <div class="note blue"><b>大白只改一个点</b><br>先敢开口。反馈只看一个发音、一个词或一句表达。</div>
+        <button class="primary" data-english-complete>完成英语回合</button>
+      </details>
+    </div>
+  </section>`;
+  if (module === "body") return `<section class="card modulePanel">
+    <div class="pill">🎾 身体舱</div>
+    <h2>${escapeHtml(pickDaily(bodyPhrases, 41))}</h2>
+    <p>学习体育双不误。身体成长不是选修项。</p>
+    <h3>今天身体状态怎么样？</h3>
+    <div class="choiceGrid bodyStatusGrid">${bodyStatusOptions.map(([id, label]) => `<button class="choice ${state.dailyState?.bodyStatus === id ? "active" : ""}" data-body-status="${id}"><b>${escapeHtml(label)}</b></button>`).join("")}</div>
+    ${state.dailyState?.bodyStatus ? renderBodySuggestion() : `<div class="note blue">先选一个状态，大白再给今天的身体建议。</div>`}
+  </section>`;
   if (module === "music") return `<section class="card modulePanel"><div class="pill">🎵 音乐舱</div><h2>口琴只练一小段</h2><div class="taskList">${roomTasks(["harmonica"]).map((task) => taskCard(task)).join("")}</div></section>`;
-  if (module === "sport") return `<section class="card modulePanel"><div class="pill">🎾 运动舱</div><h2>网球只改一个动作</h2><div class="taskList">${roomTasks(["tennis"]).map((task) => taskCard(task)).join("")}</div></section>`;
-  if (module === "explore") return `<section class="card modulePanel"><div class="pill">🌍 探索</div><h2>世界探索</h2><p>今天用一句英语，往下一站走一点。</p><details class="optionalBlock"><summary>打开探索记录</summary>${renderExploreMap()}${renderUniverseSnapshot()}${renderBattleReports()}</details></section>`;
+  if (module === "universe") return `<section class="card modulePanel"><div class="pill">📜 成长宇宙</div><h2>这里收好八宝的成长痕迹</h2>${renderUniverseSnapshot()}${renderBattleReports()}<details class="optionalBlock"><summary>身体活动记录</summary>${(state.growthUniverse?.bodyLogs || []).slice(0, 7).map((log) => `<div class="history"><b>${escapeHtml(log.date)}</b><br>${escapeHtml(log.status || "")} · ${escapeHtml(log.completedActivity || log.suggestion || "")}</div>`).join("") || `<div class="history">还没有身体记录。</div>`}</details></section>`;
   if (module === "chat") return `<section class="card modulePanel"><div class="pill">💬 聊天</div><h2>和大白说说</h2><div class="chatBox" id="chatBox">${renderConversation()}</div><label>直接跟大白说</label><textarea id="companionInput" placeholder="可以说：我今天不想学，或者我想先聊一下。"></textarea><div class="row"><button class="primary" id="voiceCompanion">🎙 开始说话</button><button class="secondary" id="sendCompanion">发送文字</button></div></section>`;
   return "";
 }
@@ -934,7 +1083,7 @@ function noteField(task, key, label, placeholder) {
   const value = state.dailyNotes?.[task.id]?.[key] || "";
   const id = `daily-${safeId(task.id)}-${safeId(key)}`;
   const hint = key === "answer" ? `<div class="coachHint">先说出来，大白再帮你改一个点</div>` : "";
-  return `<label for="${id}">${escapeHtml(label)}</label>${hint}<div class="fieldWithVoice"><textarea id="${id}" data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea><button type="button" class="voiceMini" data-voice-target="${id}" title="语音输入">🎙 说</button></div>`;
+  return `<label for="${id}">${escapeHtml(label)}</label>${hint}<textarea id="${id}" data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>`;
 }
 
 function taskCard(task, compact = false) {
@@ -965,6 +1114,7 @@ function taskCard(task, compact = false) {
         </div>
         <div class="coachOutput">
           <div class="laneTitle">右边 · 八宝输出和反馈</div>
+          <button type="button" class="secondary roomVoice" data-voice-target="daily-${safeId(task.id)}-answer">🎙️ 说给大白听</button>
           ${paused || compact ? "" : `${noteField(task, "answer", "八宝的答案 / 输出", "可以直接说：答案、英文句子、语文句子，或者口头练习内容")}
           ${noteField(task, "explain", "我自己讲清楚", "可以直接说：我怎么想的？哪里容易错？下一次只改哪一点？")}
           <div class="miniGrid">
@@ -1094,6 +1244,7 @@ const renderers = {
           <p class="oneSentence">${escapeHtml(lines[1])}</p>
           <h3 class="moduleQuestion">选一个房间</h3>
           ${renderModuleLaunchers()}
+          <button class="universeLink" data-module="universe">📜 看看我的成长宇宙</button>
         </section>
       </div>`;
     }
@@ -1236,9 +1387,57 @@ function bindAll() {
   document.querySelectorAll("[data-module]").forEach((button) => {
     button.onclick = () => {
       state.activeModule = state.activeModule === button.dataset.module ? "" : button.dataset.module;
+      state.dailyState = state.dailyState || {};
+      state.dailyState.selectedRoom = state.activeModule;
       save();
       renderPages("home");
     };
+  });
+  document.querySelectorAll("[data-body-status]").forEach((button) => {
+    button.onclick = () => {
+      state.dailyState = state.dailyState || {};
+      state.dailyState.bodyStatus = button.dataset.bodyStatus;
+      state.dailyState.hasPEClass = button.dataset.bodyStatus === "pe";
+      state.dailyState.hasTennisClass = button.dataset.bodyStatus === "tennis";
+      state.dailyState.outdoorAvailable = button.dataset.bodyStatus !== "rain";
+      state.dailyState.energy = button.dataset.bodyStatus;
+      save();
+      renderPages("home");
+    };
+  });
+  document.querySelector("[data-body-complete]")?.addEventListener("click", () => {
+    const suggestion = bodySuggestion();
+    const completedActivity = document.getElementById("bodyActivityInput")?.value.trim() || suggestion.options[0];
+    state.bodyLog = {
+      date: TODAY,
+      status: suggestion.label,
+      suggestion: suggestion.advice,
+      completedActivity,
+      durationMinutes: Number((completedActivity.match(/\d+/) || [0])[0]),
+      note: suggestion.reminder
+    };
+    state.growthUniverse = state.growthUniverse || {};
+    state.growthUniverse.bodyLogs = [state.bodyLog, ...(state.growthUniverse.bodyLogs || []).filter((log) => log.date !== TODAY)].slice(0, 30);
+    state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "body"])];
+    save();
+    renderPages("home");
+    speak("收到。身体记录已经收进成长宇宙。");
+  });
+  document.querySelector("[data-english-complete]")?.addEventListener("click", () => {
+    const value = document.getElementById("englishExploreInput")?.value.trim() || englishExploreTask();
+    const english = ensureEnglishExplore();
+    english.totalRounds = (english.totalRounds || 0) + 1;
+    english.lastTask = value;
+    state.exploration = state.exploration || { englishTasks: 0 };
+    state.exploration.englishTasks = english.totalRounds;
+    ensureEnglishExplore();
+    state.growthUniverse = state.growthUniverse || {};
+    state.growthUniverse.englishProgress = [{ date: TODAY, task: value, totalRounds: english.totalRounds, country: english.currentCountry }, ...(state.growthUniverse.englishProgress || [])].slice(0, 30);
+    state.dailyState = state.dailyState || {};
+    state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "english"])];
+    save();
+    renderPages("home");
+    speak("你已经敢开口了。大白今天只改一个点：把关键词读慢一点。");
   });
   document.querySelectorAll("[data-done]").forEach((button) => {
     button.onclick = () => {
@@ -1356,7 +1555,7 @@ async function sendCompanionMessage(messageOverride = "") {
   if (!message) return;
   if (input) input.value = "";
   addCompanionMessage("user", message);
-  renderPages("companion");
+  renderPages(state.activeModule === "chat" ? "home" : "companion");
   try {
     const response = await fetch("/api/companion-chat", {
       method: "POST",
@@ -1371,12 +1570,12 @@ async function sendCompanionMessage(messageOverride = "") {
     if (!response.ok) throw new Error(data.error || "chat failed");
     addCompanionMessage("assistant", data.reply);
     addCompanionMoment(data.reply, "companion");
-    renderPages("companion");
+    renderPages(state.activeModule === "chat" ? "home" : "companion");
     speak(data.reply, { afterEnd: continuousCompanion ? () => setTimeout(startCompanionVoiceInput, 700) : null });
   } catch {
     const fallback = "我在。我们先不急着解决全部，先把这件事变小一点。";
     addCompanionMessage("assistant", fallback);
-    renderPages("companion");
+    renderPages(state.activeModule === "chat" ? "home" : "companion");
     speak(fallback, { afterEnd: continuousCompanion ? () => setTimeout(startCompanionVoiceInput, 700) : null });
   }
 }
