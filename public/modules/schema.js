@@ -601,6 +601,7 @@ export function createInitialState() {
       mood: "",
       energy: "",
       bodyStatus: "",
+      bodyStatusSource: "",
       hasPEClass: false,
       hasTennisClass: false,
       outdoorAvailable: true,

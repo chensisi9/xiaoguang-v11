@@ -1,5 +1,5 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-growth-3";
-import { actionPhrases, bodyPhrases, encouragementPhrases, englishPhrases, greetingPhrases, memoryPhrases, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-growth-3";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-growth-4";
+import { actionPhrases, bodyPhrases, encouragementPhrases, englishPhrases, greetingPhrases, memoryPhrases, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-growth-4";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -14,7 +14,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260612-growth-3";
+} from "./modules/state.js?v=20260612-growth-4";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -471,8 +471,30 @@ function bodySuggestion(status = state.dailyState?.bodyStatus || "normal") {
   };
 }
 
+function scheduledBodyStatus() {
+  const schedule = todaySchedule();
+  const text = `${schedule.title || ""} ${schedule.school || ""} ${(schedule.fixed || []).join(" ")}`;
+  if (text.includes("网球课")) return "tennis";
+  if (text.includes("体育课")) return "pe";
+  return "";
+}
+
+function effectiveBodyStatus() {
+  const manual = state.dailyState?.bodyStatusSource === "manual" ? state.dailyState?.bodyStatus : "";
+  return manual || scheduledBodyStatus() || state.dailyState?.bodyStatus || "";
+}
+
+function scheduledBodyNote() {
+  const schedule = todaySchedule();
+  const status = scheduledBodyStatus();
+  if (!status) return "";
+  const label = status === "tennis" ? "网球课" : "体育课";
+  const fixed = (schedule.fixed || []).find((item) => item.includes(label)) || schedule.school || schedule.title;
+  return `大白已根据每周安排识别：今天有${label}${fixed ? `（${fixed}）` : ""}。`;
+}
+
 function renderBodySuggestion() {
-  const suggestion = bodySuggestion();
+  const suggestion = bodySuggestion(effectiveBodyStatus() || "normal");
   return `<div class="bodyAdvice">
     <h3>🎾 今日身体建议</h3>
     <div class="history"><b>状态：</b>${escapeHtml(suggestion.label)}</div>
@@ -483,6 +505,13 @@ function renderBodySuggestion() {
     <textarea id="bodyActivityInput" placeholder="例如：户外走了20分钟，远眺10分钟。">${escapeHtml(state.bodyLog?.completedActivity || "")}</textarea>
     <button class="primary" data-body-complete>收进身体记录</button>
   </div>`;
+}
+
+function visibleBodyStatusOptions() {
+  const scheduled = scheduledBodyStatus();
+  if (scheduled === "tennis") return bodyStatusOptions.filter(([id]) => id !== "pe");
+  if (scheduled === "pe") return bodyStatusOptions.filter(([id]) => id !== "tennis");
+  return bodyStatusOptions;
 }
 
 function renderUniverseSnapshot() {
@@ -534,9 +563,10 @@ function renderModulePanel() {
     <div class="pill">🎾 身体舱</div>
     <h2>${escapeHtml(pickDaily(bodyPhrases, 41))}</h2>
     <p>学习体育双不误。身体成长不是选修项。</p>
+    ${scheduledBodyNote() ? `<div class="note green">${escapeHtml(scheduledBodyNote())}</div>` : ""}
     <h3>今天身体状态怎么样？</h3>
-    <div class="choiceGrid bodyStatusGrid">${bodyStatusOptions.map(([id, label]) => `<button class="choice ${state.dailyState?.bodyStatus === id ? "active" : ""}" data-body-status="${id}"><b>${escapeHtml(label)}</b></button>`).join("")}</div>
-    ${state.dailyState?.bodyStatus ? renderBodySuggestion() : `<div class="note blue">先选一个状态，大白再给今天的身体建议。</div>`}
+    <div class="choiceGrid bodyStatusGrid">${visibleBodyStatusOptions().map(([id, label]) => `<button class="choice ${effectiveBodyStatus() === id ? "active" : ""}" data-body-status="${id}"><b>${escapeHtml(label)}</b></button>`).join("")}</div>
+    ${effectiveBodyStatus() ? renderBodySuggestion() : `<div class="note blue">先选一个状态，大白再给今天的身体建议。</div>`}
   </section>`;
   if (module === "music") return `<section class="card modulePanel"><div class="pill">🎵 音乐舱</div><h2>口琴只练一小段</h2><div class="taskList">${roomTasks(["harmonica"]).map((task) => taskCard(task)).join("")}</div></section>`;
   if (module === "universe") return `<section class="card modulePanel"><div class="pill">📜 成长宇宙</div><h2>这里收好八宝的成长痕迹</h2>${renderUniverseSnapshot()}${renderBattleReports()}<details class="optionalBlock"><summary>身体活动记录</summary>${(state.growthUniverse?.bodyLogs || []).slice(0, 7).map((log) => `<div class="history"><b>${escapeHtml(log.date)}</b><br>${escapeHtml(log.status || "")} · ${escapeHtml(log.completedActivity || log.suggestion || "")}</div>`).join("") || `<div class="history">还没有身体记录。</div>`}</details></section>`;
@@ -1397,6 +1427,7 @@ function bindAll() {
     button.onclick = () => {
       state.dailyState = state.dailyState || {};
       state.dailyState.bodyStatus = button.dataset.bodyStatus;
+      state.dailyState.bodyStatusSource = "manual";
       state.dailyState.hasPEClass = button.dataset.bodyStatus === "pe";
       state.dailyState.hasTennisClass = button.dataset.bodyStatus === "tennis";
       state.dailyState.outdoorAvailable = button.dataset.bodyStatus !== "rain";
@@ -1406,7 +1437,14 @@ function bindAll() {
     };
   });
   document.querySelector("[data-body-complete]")?.addEventListener("click", () => {
-    const suggestion = bodySuggestion();
+    const status = effectiveBodyStatus() || "normal";
+    state.dailyState = state.dailyState || {};
+    state.dailyState.bodyStatus = status;
+    if (!state.dailyState.bodyStatusSource) state.dailyState.bodyStatusSource = scheduledBodyStatus() ? "schedule" : "manual";
+    state.dailyState.hasPEClass = status === "pe";
+    state.dailyState.hasTennisClass = status === "tennis";
+    state.dailyState.outdoorAvailable = status !== "rain";
+    const suggestion = bodySuggestion(status);
     const completedActivity = document.getElementById("bodyActivityInput")?.value.trim() || suggestion.options[0];
     state.bodyLog = {
       date: TODAY,

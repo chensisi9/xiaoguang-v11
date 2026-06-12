@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260612-growth-3";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260612-growth-4";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
