@@ -88,7 +88,7 @@ summary{cursor:pointer;color:#8cff6a;font-weight:900}
 body{background:#050914;background-image:linear-gradient(180deg,rgba(76,201,255,.1),transparent 240px),linear-gradient(rgba(116,204,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(116,204,255,.055) 1px,transparent 1px),linear-gradient(135deg,#050914 0%,#0c1730 58%,#10131d 100%);background-size:100% 100%,34px 34px,34px 34px,100% 100%;color:var(--ink)}
 .app{max-width:1160px;padding:18px}
 .hero,.card,.footer{background:linear-gradient(180deg,rgba(13,26,47,.92),rgba(6,13,25,.9));border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(18px)}
-.hero{border-radius:8px;grid-template-columns:1fr 180px;padding:18px;margin-bottom:12px}
+.hero{display:none;border-radius:8px;grid-template-columns:1fr 180px;padding:18px;margin-bottom:12px}
 .tag{background:rgba(76,201,255,.12);border:1px solid rgba(76,201,255,.38);color:#d8f6ff;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .sub{color:#9fb4c8}
@@ -100,6 +100,22 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .panel,.nav,.footer{display:none}
 .page{animation:fade .18s}
 .simpleHome{display:grid;gap:12px}
+.baseHome{min-height:calc(100vh - 36px);display:grid;place-items:center}
+.baseCard{width:min(100%,680px);text-align:center;padding:24px}
+.dabaiAvatar{width:92px;height:92px;margin:0 auto 12px;border-radius:24px;display:grid;place-items:center;font-size:50px;background:rgba(76,201,255,.1);border:1px solid rgba(116,204,255,.26);box-shadow:0 18px 60px rgba(76,201,255,.12)}
+.baseCard h2{font-size:32px;margin:10px 0;color:#f7fbff}
+.baseCard .dabaiLine{font-size:20px;margin:12px auto 6px;max-width:520px}
+.oneSentence{margin:0 auto;color:#9fb4c8;line-height:1.55;max-width:520px}
+.baseCard .moduleQuestion{margin-top:22px}
+.baseCard .moduleGrid{grid-template-columns:repeat(5,1fr);margin-top:10px}
+.baseCard .moduleButton{text-align:center;min-height:96px}
+.baseCard .moduleButton span{font-size:30px}
+.baseCard .moduleButton small{display:none}
+.roomShell{display:grid;gap:12px}
+.roomTop{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+.roomTop h2{margin:5px 0;color:#f7fbff}
+.roomTop p{margin:0;color:#9fb4c8}
+.backHome{width:auto!important;white-space:nowrap}
 .companionLayout{grid-template-columns:minmax(300px,360px) minmax(0,1fr);align-items:start}
 .companionRail{position:sticky;top:12px;min-width:0}
 .companionStage{display:grid;gap:12px;min-width:0}
@@ -123,11 +139,6 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .moduleButton span{display:block;font-size:22px}
 .moduleButton b{display:block;margin-top:5px}
 .moduleButton small{display:block;margin-top:4px;color:#9fb4c8;line-height:1.35}
-.companionPulse{margin-top:10px;border-radius:8px;background:rgba(255,184,77,.08);border:1px solid rgba(255,184,77,.22);padding:10px 12px}
-.companionPulse b,.companionPulse span,.companionPulse small{display:block}
-.companionPulse b{color:#ffcf7a;font-size:13px}
-.companionPulse span{color:#ffe7b5;margin-top:5px;line-height:1.45}
-.companionPulse small{color:#9fb4c8;margin-top:5px;line-height:1.35}
 .voyageLine{margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(76,201,255,.08);border:1px solid rgba(76,201,255,.22);color:#d8f6ff;line-height:1.55}
 .voyageLine span{color:#ffcf7a}
 .voyageDots{display:inline-block;font-size:18px;letter-spacing:2px;margin:2px 0}
@@ -141,6 +152,8 @@ h1{color:#f7fbff;font-size:28px;text-shadow:0 0 22px rgba(76,201,255,.18)}
 .choice .small{color:#9fb4c8}
 .sectionTitle{display:flex;justify-content:space-between;gap:10px;align-items:end;margin:8px 0 10px}
 .modulePanel{margin-top:0;min-width:0}
+.taskDetails{margin-top:10px;border-top:1px solid rgba(116,204,255,.14);padding-top:10px}
+.taskDetails summary{color:#ffcf7a;font-weight:900;cursor:pointer}
 .quietPanel p{color:#9fb4c8;line-height:1.6}
 .universeSnapshot{padding:16px}
 .universeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
@@ -183,14 +196,14 @@ textarea::placeholder,input::placeholder{color:#71869b}
 .onePointBubble{position:fixed;right:16px;bottom:205px;width:260px;z-index:21;border-radius:8px;padding:13px;background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.34);box-shadow:0 16px 45px rgba(0,0,0,.35);color:#ffe7b5}
 .onePointBubble b{display:block;color:#fff;margin-bottom:8px}
 .onePointBubble p{margin:8px 0 0;line-height:1.5;font-size:13px}
-@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid,.companionLayout{grid-template-columns:1fr}.companionRail{position:static}.moduleGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
+@media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid,.companionLayout,.roomTop{grid-template-columns:1fr}.companionRail{position:static}.moduleGrid,.baseCard .moduleGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.baseCard{padding:18px}.baseCard h2{font-size:28px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="hero">
- <div><div class="tag">DABAI BATTLE ROOM</div><h1 id="todayTitle">大白</h1><p class="sub">先见到大白，再选择一个房间。</p><div class="motto" id="motto">今天只赢一小局，也算前进。</div></div>
- <div class="progress"><div class="tiny">在线航线</div><div class="progressNum" id="progressNum">DABAI</div><div class="bar"><div class="barin" id="bar"></div></div><div class="tiny" id="progressText">大白在线。</div></div>
+ <div><div class="tag">DABAI BATTLE ROOM</div><h1 id="todayTitle">大白</h1><p class="sub"></p><div class="motto" id="motto"></div></div>
+ <div class="progress"><div class="progressNum" id="progressNum"></div><div class="bar"><div class="barin" id="bar"></div></div><div class="tiny" id="progressText"></div></div>
 </header>
 <section class="panel">
  <div class="row"><div class="avatar">⌁</div><div><div class="title">大白在线</div><p class="sub">先选一个房间。想聊、想读、想动、想学都可以。</p></div></div>
@@ -203,6 +216,6 @@ textarea::placeholder,input::placeholder{color:#71869b}
 <main id="pages"></main>
 <footer class="footer"><div>今天陪大白赢下一小局。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260611-layout-3"></script>
+<script type="module" src="./app.js?v=20260612-calm-home"></script>
 </body>
 </html>

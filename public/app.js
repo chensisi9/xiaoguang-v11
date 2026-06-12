@@ -1,4 +1,4 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260611-layout-3";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-calm-home";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -13,7 +13,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260611-layout-3";
+} from "./modules/state.js?v=20260612-calm-home";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -150,11 +150,11 @@ const exploreCountries = [
 ];
 
 const moduleLaunchers = [
-  ["learning", "📚", "学习", "去训练室赢一小局"],
-  ["explore", "🌍", "探索", "看看世界航线"],
-  ["sport", "🎾", "运动", "留下一个动作点"],
-  ["reading", "📖", "阅读", "听一页也算前进"],
-  ["chat", "💬", "聊天", "只跟大白说说话"]
+  ["learning", "📚", "学习", "训练室"],
+  ["music", "🎵", "音乐", "口琴舱"],
+  ["sport", "🎾", "运动", "网球舱"],
+  ["explore", "🌍", "探索", "世界舱"],
+  ["chat", "💬", "聊天", "大白在线"]
 ];
 
 const dabaiPromptLines = [
@@ -342,6 +342,25 @@ function renderModuleLaunchers() {
     .join("")}</div>`;
 }
 
+function moduleTitle(id) {
+  const found = moduleLaunchers.find(([moduleId]) => moduleId === id);
+  return found ? `${found[1]} ${found[2]}` : "🤖 大白";
+}
+
+function homeDabaiLines() {
+  return [
+    memoryLine(),
+    activePromptLine(),
+    completionRewardText() || "今天先赢一小局？"
+  ];
+}
+
+function roomTasks(ids) {
+  const requiredIds = requiredTasks().map((task) => task.id);
+  const sorted = state.tasks.filter((task) => ids.includes(task.id));
+  return sorted.sort((a, b) => requiredIds.indexOf(b.id) - requiredIds.indexOf(a.id));
+}
+
 function renderUniverseSnapshot() {
   const voyage = voyageState();
   return `<section class="card universeSnapshot">
@@ -357,8 +376,8 @@ function renderUniverseSnapshot() {
 
 function renderModulePanel() {
   const module = state.activeModule || "";
-  const required = requiredTasks();
-  const optional = optionalTasks();
+  const required = requiredTasks().filter((task) => ["math", "english", "chinese"].includes(task.id));
+  const optional = optionalTasks().filter((task) => ["math", "english", "chinese"].includes(task.id));
   if (module === "learning") {
     return `<section class="card modulePanel">
       <div class="sectionTitle">
@@ -369,11 +388,11 @@ function renderModulePanel() {
       ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
     </section>`;
   }
-  if (module === "explore") return `<section class="card modulePanel"><div class="pill">🌍 探索</div><h2>世界探索</h2>${renderExploreMap()}<div class="note blue">今天可以用一句英语，往下一站走一点。</div></section>`;
-  if (module === "sport") return `<section class="card modulePanel"><div class="pill">🎾 运动</div><h2>运动舱</h2><div class="taskList">${state.tasks.filter((task) => ["tennis", "harmonica"].includes(task.id)).map((task) => taskCard(task)).join("")}</div></section>`;
-  if (module === "reading") return `<section class="card modulePanel"><div class="pill">📖 阅读</div><h2>阅读舱</h2><div class="history">今天只读一页也可以。RAZ、朗文、哈利波特，都算往前走。</div><div class="note blue">先听，再说一句发生了什么。</div></section>`;
+  if (module === "music") return `<section class="card modulePanel"><div class="pill">🎵 音乐舱</div><h2>口琴只练一小段</h2><div class="taskList">${roomTasks(["harmonica"]).map((task) => taskCard(task)).join("")}</div></section>`;
+  if (module === "sport") return `<section class="card modulePanel"><div class="pill">🎾 运动舱</div><h2>网球只改一个动作</h2><div class="taskList">${roomTasks(["tennis"]).map((task) => taskCard(task)).join("")}</div></section>`;
+  if (module === "explore") return `<section class="card modulePanel"><div class="pill">🌍 探索</div><h2>世界探索</h2><p>今天用一句英语，往下一站走一点。</p><details class="optionalBlock"><summary>打开探索记录</summary>${renderExploreMap()}${renderUniverseSnapshot()}${renderBattleReports()}</details></section>`;
   if (module === "chat") return `<section class="card modulePanel"><div class="pill">💬 聊天</div><h2>和大白说说</h2><div class="chatBox" id="chatBox">${renderConversation()}</div><label>直接跟大白说</label><textarea id="companionInput" placeholder="可以说：我今天不想学，或者我想先聊一下。"></textarea><div class="row"><button class="primary" id="voiceCompanion">🎙 开始说话</button><button class="secondary" id="sendCompanion">发送文字</button></div></section>`;
-  return `<section class="card modulePanel quietPanel"><h2>想做什么？</h2><p>先选一个房间。学习、阅读、运动、探索、聊天，都算和大白一起往前走。</p></section>`;
+  return "";
 }
 
 function ensureBadges() {
@@ -927,36 +946,39 @@ function taskCard(task, compact = false) {
   return `<div class="card task ${done ? "done" : ""}">
     <div class="taskTop"><div class="icon">${task.icon}</div><div class="pill">${task.type} · ${status}</div></div>
     <h2>${task.title}</h2>
-    <div class="coachGrid">
-      <div class="coachInput">
-        <div class="laneTitle">左边 · 今天练什么</div>
-        <p>${task.detail}</p>
-        <div class="note green">${taskCompanionHint(task)}</div>
-        <div class="note blue">${escapeHtml(taskLoadTarget(task))}</div>
-        ${examples.length ? `<div class="exampleBox">
-          <h3>今天直接做</h3>
-          ${examples.map((example, index) => `<div class="history">
-            <b>${index + 1}. ${escapeHtml(example.point)}</b><br>
-            ${escapeHtml(example.prompt)}
-            <details><summary>提示 / 答案</summary><div class="tiny">${escapeHtml(example.hint)}<br><b>参考：</b>${escapeHtml(example.answer)}</div></details>
-          </div>`).join("")}
-        </div>` : ""}
-      </div>
-      <div class="coachOutput">
-        <div class="laneTitle">右边 · 八宝输出和反馈</div>
-        ${paused || compact ? "" : `${noteField(task, "answer", "八宝的答案 / 输出", "可以直接说：答案、英文句子、语文句子，或者口头练习内容")}
-        ${noteField(task, "explain", "我自己讲清楚", "可以直接说：我怎么想的？哪里容易错？下一次只改哪一点？")}
-        <div class="miniGrid">
-          <div>${noteField(task, "today", "今天实际练了什么", "例如：6道计算题 / 朗读第3段 / 第4-8小节")}</div>
-          <div>${noteField(task, "focus", "今天只改一个点", "例如：圈关键词 / 换孔慢半拍 / 击球点靠前")}</div>
+    <p class="oneSentence">${escapeHtml(taskLoadTarget(task))}</p>
+    <details class="taskDetails">
+      <summary>打开这一小局</summary>
+      <div class="coachGrid">
+        <div class="coachInput">
+          <div class="laneTitle">左边 · 今天练什么</div>
+          <p>${task.detail}</p>
+          <div class="note green">${taskCompanionHint(task)}</div>
+          ${examples.length ? `<div class="exampleBox">
+            <h3>今天直接做</h3>
+            ${examples.map((example, index) => `<div class="history">
+              <b>${index + 1}. ${escapeHtml(example.point)}</b><br>
+              ${escapeHtml(example.prompt)}
+              <details><summary>提示 / 答案</summary><div class="tiny">${escapeHtml(example.hint)}<br><b>参考：</b>${escapeHtml(example.answer)}</div></details>
+            </div>`).join("")}
+          </div>` : ""}
         </div>
-        ${note.feedback ? `<div class="note green"><b>大白互动反馈</b><br>${escapeHtml(note.feedback)}</div>` : `<div class="note blue"><b>大白互动反馈</b><br>说出或写下答案，再点“I 得到反馈”。大白只改一个精确点，不会一口气检查全部。</div>`}` }
+        <div class="coachOutput">
+          <div class="laneTitle">右边 · 八宝输出和反馈</div>
+          ${paused || compact ? "" : `${noteField(task, "answer", "八宝的答案 / 输出", "可以直接说：答案、英文句子、语文句子，或者口头练习内容")}
+          ${noteField(task, "explain", "我自己讲清楚", "可以直接说：我怎么想的？哪里容易错？下一次只改哪一点？")}
+          <div class="miniGrid">
+            <div>${noteField(task, "today", "今天实际练了什么", "例如：6道计算题 / 朗读第3段 / 第4-8小节")}</div>
+            <div>${noteField(task, "focus", "今天只改一个点", "例如：圈关键词 / 换孔慢半拍 / 击球点靠前")}</div>
+          </div>
+          ${note.feedback ? `<div class="note green"><b>大白互动反馈</b><br>${escapeHtml(note.feedback)}</div>` : `<div class="note blue"><b>大白互动反馈</b><br>说出或写下答案，再点“I 得到反馈”。大白只改一个精确点，不会一口气检查全部。</div>`}` }
+        </div>
       </div>
-    </div>
-    ${paused ? "" : `<div class="ladder" data-task="${task.id}">
-      ${icapSteps.map(([key, label]) => `<button class="${stageDone(task, key) ? "active" : ""}" data-icap="${key}">${label}</button>`).join("")}
-    </div>
-    <button class="primary ${done ? "done" : ""}" data-done="task_${task.id}">${done ? "已完成" : status === "可选" ? "完成可选项" : "完成这一项"}</button>`}
+      ${paused ? "" : `<div class="ladder" data-task="${task.id}">
+        ${icapSteps.map(([key, label]) => `<button class="${stageDone(task, key) ? "active" : ""}" data-icap="${key}">${label}</button>`).join("")}
+      </div>
+      <button class="primary ${done ? "done" : ""}" data-done="task_${task.id}">${done ? "已完成" : status === "可选" ? "完成可选项" : "完成这一项"}</button>`}
+    </details>
   </div>`;
 }
 
@@ -1061,35 +1083,30 @@ function materialCards(subject = "") {
 
 const renderers = {
   home() {
-    const buddy = dabaiBuddyLines();
-    return `<div class="simpleHome companionLayout">
-      <aside class="companionRail">
-        <section class="card focusCard companionHome">
-          <div class="pill">🤖 DABAI</div>
-          <h2>早上好，${escapeHtml(state.profile?.childName || "八宝")}。</h2>
-          <p class="dabaiLine">${escapeHtml(activePromptLine())}</p>
-          <div class="memoryLine">我记得：${escapeHtml(memoryLine())}</div>
-          <div class="dabaiStatusGrid">
-            <div><b>在线</b><span>第 ${onlineDayCount()} 天</span></div>
-            <div><b>今天状态</b><span>${escapeHtml(buddy.status)}</span></div>
-            <div><b>今天心情</b><span>${escapeHtml(dabaiMood())}</span></div>
-            <div><b>今天观察</b><span>${escapeHtml(buddy.observation)}</span></div>
-          </div>
-          <div class="companionPulse">
-            <b>今日信号</b>
-            <span>${escapeHtml(completionRewardText() || "选一个房间，赢下一小局。")}</span>
-            <small>徽章和故事会自动进入右侧成长宇宙。</small>
-          </div>
-          <div class="choiceGrid statusGrid">${choiceButtons("weather", [["很好", "状态不错"], ["还行", "正常巡航"], ["有点累", "低电量"], ["不想学", "先陪我"]])}</div>
-          <h3 class="moduleQuestion">想做什么？</h3>
+    const lines = homeDabaiLines();
+    if (!state.activeModule) {
+      return `<div class="baseHome">
+        <section class="card baseCard">
+          <div class="dabaiAvatar">🤖</div>
+          <div class="pill">大白在等你</div>
+          <h2>大白</h2>
+          <p class="dabaiLine">${escapeHtml(lines[0])}</p>
+          <p class="oneSentence">${escapeHtml(lines[1])}</p>
+          <h3 class="moduleQuestion">选一个房间</h3>
           ${renderModuleLaunchers()}
         </section>
-      </aside>
-      <section class="companionStage">
-        ${renderModulePanel()}
-        ${renderUniverseSnapshot()}
-        ${renderBattleReports()}
+      </div>`;
+    }
+    return `<div class="roomShell">
+      <section class="roomTop card">
+        <button class="secondary backHome" data-room-home>← 回到大白</button>
+        <div>
+          <div class="pill">${escapeHtml(moduleTitle(state.activeModule))}</div>
+          <h2>${escapeHtml(lines[2])}</h2>
+          <p>${escapeHtml(lines[1])}</p>
+        </div>
       </section>
+      ${renderModulePanel()}
       ${renderOnePointBubble()}
     </div>`;
   },
@@ -1209,6 +1226,13 @@ function bindAll() {
     };
   });
   document.querySelectorAll("[data-jump]").forEach((button) => (button.onclick = () => showPage(button.dataset.jump)));
+  document.querySelectorAll("[data-room-home]").forEach((button) => {
+    button.onclick = () => {
+      state.activeModule = "";
+      save();
+      renderPages("home");
+    };
+  });
   document.querySelectorAll("[data-module]").forEach((button) => {
     button.onclick = () => {
       state.activeModule = state.activeModule === button.dataset.module ? "" : button.dataset.module;
