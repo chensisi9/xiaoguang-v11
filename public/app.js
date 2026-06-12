@@ -1,5 +1,5 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-growth-4";
-import { actionPhrases, bodyPhrases, encouragementPhrases, englishPhrases, greetingPhrases, memoryPhrases, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-growth-4";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-phrases-1";
+import { bodyPhrases, encouragementPhrases, englishPhrases, getDailyDabaiLine, getRoomPhrase, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-phrases-1";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -14,7 +14,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260612-growth-4";
+} from "./modules/state.js?v=20260612-phrases-1";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -350,14 +350,8 @@ function moduleTitle(id) {
 }
 
 function homeDabaiLines() {
-  const seed = daySeed();
-  const day = new Date(TODAY).getDay();
-  const weeklySportsMemory = day === 1 || day === 4 ? "我记得你和爸爸说过：学习体育双不误。" : "";
-  return [
-    seededPhrase(greetingPhrases, seed, 1),
-    weeklySportsMemory || seededPhrase(memoryPhrases, seed, 7),
-    seededPhrase(actionPhrases, seed, 13)
-  ];
+  const line = getDailyDabaiLine(TODAY, state.userProfile || state.profile || {});
+  return [line.greeting, line.memory, line.action];
 }
 
 function roomTasks(ids) {
@@ -1278,13 +1272,14 @@ const renderers = {
         </section>
       </div>`;
     }
+    const roomLine = getRoomPhrase(state.activeModule, TODAY, state.userProfile || state.profile || {});
     return `<div class="roomShell">
       <section class="roomTop card">
         <button class="secondary backHome" data-room-home>← 回到大白</button>
         <div>
           <div class="pill">${escapeHtml(moduleTitle(state.activeModule))}</div>
-          <h2>${escapeHtml(lines[2])}</h2>
-          <p>${escapeHtml(lines[1])}</p>
+          <h2>${escapeHtml(roomLine.encouragement)}</h2>
+          <p>${escapeHtml(roomLine.action)}</p>
         </div>
       </section>
       ${renderModulePanel()}

@@ -1,4 +1,34 @@
-const poeticGreetingPairs = [
+export type UserProfile = {
+  name?: string;
+  age?: number;
+  goals?: string[];
+  interests?: string[];
+  preferences?: string[];
+};
+
+export type DailyDabaiLine = {
+  greeting: string;
+  memory: string;
+  encouragement: string;
+  action: string;
+  fullLine: string;
+};
+
+export type RoomPhrase = {
+  memory: string;
+  encouragement: string;
+  action: string;
+  fullLine: string;
+};
+
+export type DabaiPhraseBank = {
+  greetingPhrases: string[];
+  memoryPhrases: string[];
+  encouragementPhrases: string[];
+  actionPhrases: string[];
+};
+
+const poeticGreetingPairs: Array<[string, string]> = [
   ["春眠不觉晓", "八宝，今天慢慢启动"],
   ["海日生残夜", "新的一天，大白上线"],
   ["会当凌绝顶", "今天不用登顶，先迈一步"],
@@ -41,12 +71,12 @@ const poeticGreetingPairs = [
   ["明月出天山", "大白陪你开舱"]
 ];
 
-export const greetingPhrases = poeticGreetingPairs.flatMap(([line, note]) => [
+export const greetingPhrases: string[] = poeticGreetingPairs.flatMap(([line, note]) => [
   `${line}。${note}。`,
   `${line}。八宝，${note.replace(/^今天/, "今天也")}。`
 ]);
 
-export const sportsMemory = [
+export const sportsMemory: string[] = [
   "网球场上的你，和书桌前的你，是同一个正在变强的你。",
   "球拍会记住练过的动作，大脑也会。",
   "身体动起来以后，思路常常会亮一点。",
@@ -64,7 +94,7 @@ export const sportsMemory = [
   "真正的身体成长，常常从轻松活动开始。"
 ];
 
-export const englishMemory = [
+export const englishMemory: string[] = [
   "英语不是作业，它是你以后打开世界的一把钥匙。",
   "未来想去更大的世界，今天先说一句就够。",
   "一句完整英语，就是向远方靠近一点。",
@@ -82,7 +112,7 @@ export const englishMemory = [
   "远方不是一下到达的，是一句一句靠近的。"
 ];
 
-export const learningMemory = [
+export const learningMemory: string[] = [
   "你讲清楚一道题，比糊涂刷十道更重要。",
   "数学适合你当小教练，先把思路说出来。",
   "语文可以先说，再慢慢写下来。",
@@ -100,7 +130,7 @@ export const learningMemory = [
   "你的脑子喜欢策略，我们就用策略开局。"
 ];
 
-export const emotionMemory = [
+export const emotionMemory: string[] = [
   "你不是不想成长，只是不喜欢被催着长大。",
   "有时不想启动，也可以从低电量模式开始。",
   "大白会先听你说完，再给下一步。",
@@ -118,7 +148,7 @@ export const emotionMemory = [
   "大白会在旁边，不抢你的方向盘。"
 ];
 
-export const fatherSonMemory = [
+export const fatherSonMemory: string[] = [
   "你和爸爸说过，学习体育双不误。",
   "爸爸看重你的成长，大白帮你把路变轻一点。",
   "家里的期待可以很大，今天的动作可以很小。",
@@ -136,7 +166,7 @@ export const fatherSonMemory = [
   "大白收好这句：学习体育双不误。"
 ];
 
-export const worldMemory = [
+export const worldMemory: string[] = [
   "你喜欢地图和远方，今天就从一个小入口出发。",
   "世界很大，入口可以很小。",
   "探索不是跑很远，是多看懂一点。",
@@ -154,7 +184,7 @@ export const worldMemory = [
   "今天先向远方打个招呼。"
 ];
 
-export const musicMemory = [
+export const musicMemory: string[] = [
   "口琴需要慢一点，像风穿过小孔。",
   "音乐舱不比快，只听一个小节变清楚。",
   "吹准一小段，比急着吹完更好。",
@@ -172,7 +202,7 @@ export const musicMemory = [
   "大白会听见你练过的痕迹。"
 ];
 
-export const expressionMemory = [
+export const expressionMemory: string[] = [
   "你的表达很有力量，先说出来就好。",
   "你适合被当成有想法的人。",
   "说清楚，是你很重要的能力。",
@@ -190,7 +220,7 @@ export const expressionMemory = [
   "今天让一个想法出来透透气。"
 ];
 
-export const memoryPhrases = [
+export const memoryPhrases: string[] = [
   ...sportsMemory,
   ...englishMemory,
   ...learningMemory,
@@ -201,7 +231,7 @@ export const memoryPhrases = [
   ...expressionMemory
 ];
 
-export const encouragementPhrases = [
+export const encouragementPhrases: string[] = [
   "今天不需要爆发，只要重新上场。",
   "呼吸稳一点，下一步就会出现。",
   "球还没落地，我们就还有机会。",
@@ -324,7 +354,7 @@ export const encouragementPhrases = [
   "小小一拍，也算回到节奏。"
 ];
 
-export const actionPhrases = [
+export const actionPhrases: string[] = [
   "先看局势，再选房间。",
   "今天不用大战，先拿下一格。",
   "像下棋一样，先走最稳的一步。",
@@ -447,18 +477,18 @@ export const actionPhrases = [
   "先从最像游戏的一步开始。"
 ];
 
-export const bodyPhrases = [...sportsMemory.slice(0, 10), ...encouragementPhrases.slice(0, 10)];
-export const englishPhrases = [...englishMemory.slice(0, 10), ...encouragementPhrases.slice(30, 40)];
+export const bodyPhrases: string[] = [...sportsMemory.slice(0, 10), ...encouragementPhrases.slice(0, 10)];
+export const englishPhrases: string[] = [...englishMemory.slice(0, 10), ...encouragementPhrases.slice(30, 40)];
 
-export const dabaiPhrases = {
+export const dabaiPhrases: DabaiPhraseBank = {
   greetingPhrases,
   memoryPhrases,
   encouragementPhrases,
   actionPhrases
 };
 
-export function getSeededRandom(date, salt = 0) {
-  const value = String(date || new Date().toISOString().slice(0, 10));
+export function getSeededRandom(date: string | Date, salt = 0): () => number {
+  const value = date instanceof Date ? date.toISOString().slice(0, 10) : String(date || new Date().toISOString().slice(0, 10));
   let seed = 0;
   for (let index = 0; index < value.length; index += 1) seed = (seed * 31 + value.charCodeAt(index)) >>> 0;
   seed = (seed + salt * 2654435761) >>> 0;
@@ -473,11 +503,11 @@ export function getSeededRandom(date, salt = 0) {
   };
 }
 
-function dateKey(date) {
+function dateKey(date: string | Date): string {
   return date instanceof Date ? date.toISOString().slice(0, 10) : String(date || new Date().toISOString().slice(0, 10)).slice(0, 10);
 }
 
-function previousDateKey(date, offset = 1) {
+function previousDateKey(date: string | Date, offset = 1): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey(date));
   if (!match) return "";
   const value = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
@@ -485,12 +515,12 @@ function previousDateKey(date, offset = 1) {
   return value.toISOString().slice(0, 10);
 }
 
-function pickIndex(list, date, salt) {
+function pickIndex(list: string[], date: string | Date, salt: number): number {
   const random = getSeededRandom(date, salt);
   return Math.floor(random() * list.length) % list.length;
 }
 
-function pickValueAvoidingPrevious(list, date, salt, depth = 3) {
+function pickValueAvoidingPrevious(list: string[], date: string | Date, salt: number, depth = 3): string {
   if (!list.length) return "";
   let index = pickIndex(list, date, salt);
   if (depth <= 0) return list[index];
@@ -505,20 +535,20 @@ function pickValueAvoidingPrevious(list, date, salt, depth = 3) {
   return list[index];
 }
 
-function pickAvoidPrevious(list, date, salt) {
+function pickAvoidPrevious(list: string[], date: string | Date, salt: number): string {
   return pickValueAvoidingPrevious(list, date, salt, 4);
 }
 
-function uniquePhrases(list) {
+function uniquePhrases(list: string[]): string[] {
   return [...new Set(list.filter(Boolean))];
 }
 
-export function seededPhrase(list, seed, offset = 0) {
+export function seededPhrase(list: string[], seed: number, offset = 0): string {
   if (!list?.length) return "";
   return list[Math.abs(seed + offset) % list.length];
 }
 
-function composeDailyDabaiLine(date, userProfile = {}, attempt = 0) {
+function composeDailyDabaiLine(date: string | Date, userProfile: UserProfile = {}, attempt = 0): DailyDabaiLine {
   const goals = userProfile.goals || [];
   const interests = userProfile.interests || [];
   const memoryPool = uniquePhrases([
@@ -541,7 +571,7 @@ function composeDailyDabaiLine(date, userProfile = {}, attempt = 0) {
   };
 }
 
-export function getDailyDabaiLine(date, userProfile = {}) {
+export function getDailyDabaiLine(date: string | Date, userProfile: UserProfile = {}): DailyDabaiLine {
   const key = dateKey(date);
   const previousKey = previousDateKey(key);
   let line = composeDailyDabaiLine(key, userProfile, 0);
@@ -555,7 +585,7 @@ export function getDailyDabaiLine(date, userProfile = {}) {
   return line;
 }
 
-export function getRoomPhrase(roomName, date, userProfile = {}) {
+export function getRoomPhrase(roomName: string, date: string | Date, userProfile: UserProfile = {}): RoomPhrase {
   const room = String(roomName || "");
   let memoryPool = memoryPhrases;
   let encouragementPool = encouragementPhrases;
