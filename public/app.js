@@ -1,5 +1,7 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-phrases-1";
-import { bodyPhrases, encouragementPhrases, englishPhrases, getDailyDabaiLine, getRoomPhrase, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-phrases-1";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-english-route-1";
+import { bodyPhrases, encouragementPhrases, getDailyDabaiLine, getRoomPhrase, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-phrases-1";
+import { renderEnglishExploreRoom } from "./modules/EnglishExploreRoom.js?v=20260612-english-route-1";
+import { getDailyEnglishTask, getEnglishOnePointFeedback } from "./modules/englishPlan.js?v=20260612-english-route-1";
 import {
   addCompanionMoment,
   addCompanionMessage,
@@ -14,7 +16,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260612-phrases-1";
+} from "./modules/state.js?v=20260612-english-route-1";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -371,7 +373,16 @@ const bodyStatusOptions = [
 ];
 
 function ensureEnglishExplore() {
-  state.englishExplore = state.englishExplore || { totalRounds: state.exploration?.englishTasks || 0, currentCountry: "中国", unlockedCountries: ["中国"], lastTask: "" };
+  state.englishExplore = {
+    totalRounds: state.exploration?.englishTasks || 0,
+    currentCountry: "中国",
+    unlockedCountries: ["中国"],
+    lastTask: "",
+    reflection: "",
+    onePointFeedback: "",
+    date: "",
+    ...(state.englishExplore || {})
+  };
   const total = state.englishExplore.totalRounds || 0;
   const index = Math.min(exploreCountries.length - 1, Math.floor(total / 10));
   state.englishExplore.currentCountry = exploreCountries[index][0];
@@ -535,24 +546,7 @@ function renderModulePanel() {
       ${optional.length ? `<details class="optionalBlock"><summary>有余力再看可选项</summary><div class="taskList">${optional.map((task) => taskCard(task)).join("")}</div></details>` : ""}
     </section>`;
   }
-  if (module === "english") return `<section class="card modulePanel">
-    <div class="pill">🌍 英语探索舱</div>
-    <h2>${escapeHtml(pickDaily(englishPhrases, 31))}</h2>
-    <p>英语不是普通学科，是通往世界的工具。</p>
-    ${renderEnglishProgress()}
-    <div class="task card">
-      <div class="taskTop"><div class="icon">🌍</div><div class="pill">英语回合</div></div>
-      <h2>今天只开口一点</h2>
-      <p class="oneSentence">${escapeHtml(englishExploreTask())}</p>
-      <details class="taskDetails">
-        <summary>开始英语探索</summary>
-        <label>🎙️ 说给大白听</label>
-        <textarea id="englishExploreInput" placeholder="可以说一句英文，也可以先写下来。">${escapeHtml(state.englishExplore?.lastTask || "")}</textarea>
-        <div class="note blue"><b>大白只改一个点</b><br>先敢开口。反馈只看一个发音、一个词或一句表达。</div>
-        <button class="primary" data-english-complete>完成英语回合</button>
-      </details>
-    </div>
-  </section>`;
+  if (module === "english") return renderEnglishExploreRoom({ state, today: TODAY, energyMode: englishMode(), renderEnglishProgress, escapeHtml });
   if (module === "body") return `<section class="card modulePanel">
     <div class="pill">🎾 身体舱</div>
     <h2>${escapeHtml(pickDaily(bodyPhrases, 41))}</h2>
@@ -874,11 +868,12 @@ function todayLoadProfile() {
   const optional = uniqueList([...base.optional, ...(schedule.optionalExtra || [])]).filter((id) => !required.includes(id));
   const paused = uniqueList([...base.paused, ...(schedule.pausedExtra || [])]).filter((id) => !required.includes(id) && !optional.includes(id));
   const adjusted = Boolean(schedule.requiredOverride || schedule.optionalExtra?.length || schedule.pausedExtra?.length);
+  const routeName = adjusted ? `${schedule.day}轻量路线` : `${base.name}`;
   return {
     ...base,
     baseKey: state.weather || "还行",
-    name: adjusted ? `${schedule.title} · 固定课调整` : `${base.name} · ${schedule.title}`,
-    summary: adjusted ? `按${schedule.day}固定安排调整任务。${schedule.energy}` : `${base.summary} ${schedule.energy}`,
+    name: routeName,
+    summary: adjusted ? `${schedule.energy}` : `${base.summary} ${schedule.energy}`,
     required,
     optional,
     paused,
@@ -928,9 +923,7 @@ function uniqueList(items) {
 
 function scheduleTemplate(base, schedule) {
   const lines = [
-    `${schedule.day}：${schedule.title}。${schedule.school}`,
-    ...schedule.fixed.map((item) => `固定安排：${item}`),
-    `今日原则：${schedule.energy}`
+    `${schedule.day}：${schedule.energy}`
   ];
   const required = schedule.requiredOverride || base.required;
   required.forEach((id) => {
@@ -1103,11 +1096,55 @@ function choiceButtons(field, options) {
     .join("");
 }
 
-function noteField(task, key, label, placeholder) {
+function taskNoteCopy(task, key) {
+  const map = {
+    math: {
+      answer: ["数学答案", "可以直接说：答案是3.6；第一步先对齐小数点。"],
+      explain: ["我是怎么想的", "可以直接说：我先看单位，再列式，最后检查小数点。"],
+      today: ["今天算了什么", "例如：5道小数加减 / 2道简算 / 1道三角形题"],
+      focus: ["今天只改一个点", "例如：等号对齐 / 单位写完整 / 最后验算一次"]
+    },
+    english: {
+      answer: ["英文句子", "可以直接说：I think tennis is fun because ___. / I heard ___."],
+      explain: ["我想表达什么", "可以直接说：我想说原因；because 后面接一个理由。"],
+      today: ["今天英语练了什么", "例如：RAZ一篇 / 朗文一个句型 / 自然拼读 magic e"],
+      focus: ["今天只改一个点", "例如：because理由说清楚 / 句首大写 / 关键词读慢"]
+    },
+    chinese: {
+      answer: ["语文句子", "可以直接说：我看到一个画面：___；作者想表达___。"],
+      explain: ["我讲清楚的画面", "可以直接说：这句诗里有颜色、动作和心情。"],
+      today: ["今天语文练了什么", "例如：一首古诗 / 一段阅读 / 一句写具体"],
+      focus: ["今天只改一个点", "例如：补一个动作 / 补一个感受 / 把句子说具体"]
+    },
+    harmonica: {
+      answer: ["口琴练习内容", "可以直接说：第4-8小节，换孔慢半拍。"],
+      explain: ["哪里变清楚了", "可以直接说：这次气息更稳，但换孔还要慢。"],
+      today: ["今天吹了什么", "例如：最熟一小段 / 第4-8小节 / 慢速三遍"],
+      focus: ["今天只改一个点", "例如：换孔慢半拍 / 气息轻一点 / 只练一小节"]
+    },
+    tennis: {
+      answer: ["网球动作", "可以直接说：击球点靠前，收拍放松。"],
+      explain: ["我感觉到的动作点", "可以直接说：球来的时候脚先到，拍面稳一点。"],
+      today: ["今天练了什么", "例如：网球课 / 小垫步 / 正手击球点 / 拉伸"],
+      focus: ["今天只改一个点", "例如：击球点靠前 / 提前侧身 / 击球后看球"]
+    }
+  };
+  return map[task?.id]?.[key] || {
+    answer: ["今天的输出", "可以直接说：我完成了什么。"],
+    explain: ["我讲清楚", "可以直接说：我是怎么做的。"],
+    today: ["今天实际练了什么", "例如：一个小回合。"],
+    focus: ["今天只改一个点", "例如：下一次只看一个动作。"]
+  }[key];
+}
+
+function noteField(task, key, label = "", placeholder = "") {
   const value = state.dailyNotes?.[task.id]?.[key] || "";
   const id = `daily-${safeId(task.id)}-${safeId(key)}`;
+  const copy = taskNoteCopy(task, key);
+  const fieldLabel = label || copy[0];
+  const fieldPlaceholder = placeholder || copy[1];
   const hint = key === "answer" ? `<div class="coachHint">先说出来，大白再帮你改一个点</div>` : "";
-  return `<label for="${id}">${escapeHtml(label)}</label>${hint}<textarea id="${id}" data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>`;
+  return `<label for="${id}">${escapeHtml(fieldLabel)}</label>${hint}<div class="fieldWithVoice"><textarea id="${id}" data-daily-task="${task.id}" data-daily-key="${key}" placeholder="${escapeHtml(fieldPlaceholder)}">${escapeHtml(value)}</textarea><button type="button" class="voiceMini" data-voice-target="${id}" title="语音输入">🎙 说</button></div>`;
 }
 
 function taskCard(task, compact = false) {
@@ -1138,12 +1175,11 @@ function taskCard(task, compact = false) {
         </div>
         <div class="coachOutput">
           <div class="laneTitle">右边 · 八宝输出和反馈</div>
-          <button type="button" class="secondary roomVoice" data-voice-target="daily-${safeId(task.id)}-answer">🎙️ 说给大白听</button>
-          ${paused || compact ? "" : `${noteField(task, "answer", "八宝的答案 / 输出", "可以直接说：答案、英文句子、语文句子，或者口头练习内容")}
-          ${noteField(task, "explain", "我自己讲清楚", "可以直接说：我怎么想的？哪里容易错？下一次只改哪一点？")}
+          ${paused || compact ? "" : `${noteField(task, "answer")}
+          ${noteField(task, "explain")}
           <div class="miniGrid">
-            <div>${noteField(task, "today", "今天实际练了什么", "例如：6道计算题 / 朗读第3段 / 第4-8小节")}</div>
-            <div>${noteField(task, "focus", "今天只改一个点", "例如：圈关键词 / 换孔慢半拍 / 击球点靠前")}</div>
+            <div>${noteField(task, "today")}</div>
+            <div>${noteField(task, "focus")}</div>
           </div>
           ${note.feedback ? `<div class="note green"><b>大白互动反馈</b><br>${escapeHtml(note.feedback)}</div>` : `<div class="note blue"><b>大白互动反馈</b><br>说出或写下答案，再点“I 得到反馈”。大白只改一个精确点，不会一口气检查全部。</div>`}` }
         </div>
@@ -1457,20 +1493,36 @@ function bindAll() {
     speak("收到。身体记录已经收进成长宇宙。");
   });
   document.querySelector("[data-english-complete]")?.addEventListener("click", () => {
-    const value = document.getElementById("englishExploreInput")?.value.trim() || englishExploreTask();
+    const task = getDailyEnglishTask({ date: TODAY, energyMode: englishMode() });
+    const value = document.getElementById("englishExploreInput")?.value.trim() || task.outputRequirement;
+    const reflection = document.getElementById("englishExploreReflection")?.value.trim() || "";
+    const feedback = getEnglishOnePointFeedback(value, task);
     const english = ensureEnglishExplore();
     english.totalRounds = (english.totalRounds || 0) + 1;
+    english.date = TODAY;
+    english.recommendedModule = task.recommendedModule;
+    english.taskTitle = task.taskTitle;
     english.lastTask = value;
+    english.reflection = reflection;
+    english.onePointFeedback = feedback.text;
     state.exploration = state.exploration || { englishTasks: 0 };
     state.exploration.englishTasks = english.totalRounds;
     ensureEnglishExplore();
     state.growthUniverse = state.growthUniverse || {};
-    state.growthUniverse.englishProgress = [{ date: TODAY, task: value, totalRounds: english.totalRounds, country: english.currentCountry }, ...(state.growthUniverse.englishProgress || [])].slice(0, 30);
+    state.growthUniverse.englishProgress = [{
+      date: TODAY,
+      module: task.recommendedModule,
+      task: value,
+      reflection,
+      onePointFeedback: feedback.focus,
+      totalRounds: english.totalRounds,
+      country: english.currentCountry
+    }, ...(state.growthUniverse.englishProgress || [])].slice(0, 30);
     state.dailyState = state.dailyState || {};
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "english"])];
     save();
     renderPages("home");
-    speak("你已经敢开口了。大白今天只改一个点：把关键词读慢一点。");
+    speak(feedback.text);
   });
   document.querySelectorAll("[data-done]").forEach((button) => {
     button.onclick = () => {
@@ -1506,6 +1558,17 @@ function bindAll() {
       state.dailyNotes.resources = state.dailyNotes.resources || {};
       state.dailyNotes.resources[input.dataset.resourceTrack] = state.dailyNotes.resources[input.dataset.resourceTrack] || {};
       state.dailyNotes.resources[input.dataset.resourceTrack].output = input.value;
+      save();
+    };
+  });
+  ["englishExploreInput", "englishExploreReflection"].forEach((id) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.oninput = () => {
+      const english = ensureEnglishExplore();
+      english.date = TODAY;
+      if (id === "englishExploreInput") english.lastTask = input.value;
+      if (id === "englishExploreReflection") english.reflection = input.value;
       save();
     };
   });

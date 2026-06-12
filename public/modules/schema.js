@@ -620,7 +620,12 @@ export function createInitialState() {
       totalRounds: 0,
       currentCountry: "中国",
       unlockedCountries: ["中国"],
-      lastTask: ""
+      lastTask: "",
+      reflection: "",
+      onePointFeedback: "",
+      recommendedModule: "",
+      taskTitle: "",
+      date: ""
     },
     growthUniverse: {
       routeDays: 0,
