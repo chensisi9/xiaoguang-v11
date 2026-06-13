@@ -1,8 +1,10 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260612-curriculum-1";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260613-music-room-1";
 import { bodyPhrases, encouragementPhrases, getDailyDabaiLine, getRoomPhrase, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-phrases-1";
 import { renderEnglishExploreRoom } from "./modules/EnglishExploreRoom.js?v=20260612-english-route-1";
 import { getDailyEnglishTask, getEnglishOnePointFeedback } from "./modules/englishPlan.js?v=20260612-english-route-1";
 import { renderContentLibrary, renderLearningRoom } from "./modules/LearningRoom.js?v=20260612-curriculum-1";
+import { buildMusicPracticeLog, createMusicFileMeta, renderMusicRoom } from "./modules/MusicRoom.js?v=20260613-music-room-1";
+import { generateMusicPracticeTask, hayaoMiyazakiMedley, musicSectionLabel } from "./modules/musicPlan.js?v=20260613-music-room-1";
 import { generateDailyLearningTask, generateOnePointFeedback, nextReviewDate } from "./modules/curriculumEngine.js?v=20260612-curriculum-1";
 import {
   addCompanionMoment,
@@ -18,7 +20,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260612-curriculum-1";
+} from "./modules/state.js?v=20260613-music-room-1";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -551,8 +553,15 @@ function renderModulePanel() {
     <div class="choiceGrid bodyStatusGrid">${visibleBodyStatusOptions().map(([id, label]) => `<button class="choice ${effectiveBodyStatus() === id ? "active" : ""}" data-body-status="${id}"><b>${escapeHtml(label)}</b></button>`).join("")}</div>
     ${effectiveBodyStatus() ? renderBodySuggestion() : `<div class="note blue">先选一个状态，大白再给今天的身体建议。</div>`}
   </section>`;
-  if (module === "music") return `<section class="card modulePanel"><div class="pill">🎵 音乐舱</div><h2>口琴只练一小段</h2><div class="taskList">${roomTasks(["harmonica"]).map((task) => taskCard(task)).join("")}</div></section>`;
-  if (module === "universe") return `<section class="card modulePanel"><div class="pill">📜 成长宇宙</div><h2>这里收好八宝的成长痕迹</h2>${renderUniverseSnapshot()}${renderBattleReports()}<details class="optionalBlock"><summary>身体活动记录</summary>${(state.growthUniverse?.bodyLogs || []).slice(0, 7).map((log) => `<div class="history"><b>${escapeHtml(log.date)}</b><br>${escapeHtml(log.status || "")} · ${escapeHtml(log.completedActivity || log.suggestion || "")}</div>`).join("") || `<div class="history">还没有身体记录。</div>`}</details></section>`;
+  if (module === "music") return renderMusicRoom({
+    state,
+    today: TODAY,
+    weekday: todayWeekday(),
+    energyMode: englishMode(),
+    fixedActivitiesToday: todaySchedule().fixed || [],
+    escapeHtml
+  });
+  if (module === "universe") return `<section class="card modulePanel"><div class="pill">📜 成长宇宙</div><h2>这里收好八宝的成长痕迹</h2>${renderUniverseSnapshot()}${renderBattleReports()}<details class="optionalBlock"><summary>身体活动记录</summary>${(state.growthUniverse?.bodyLogs || []).slice(0, 7).map((log) => `<div class="history"><b>${escapeHtml(log.date)}</b><br>${escapeHtml(log.status || "")} · ${escapeHtml(log.completedActivity || log.suggestion || "")}</div>`).join("") || `<div class="history">还没有身体记录。</div>`}</details>${renderMusicLogs()}</section>`;
   if (module === "chat") return `<section class="card modulePanel"><div class="pill">💬 聊天</div><h2>和大白说说</h2><div class="chatBox" id="chatBox">${renderConversation()}</div><label>直接跟大白说</label><textarea id="companionInput" placeholder="可以说：我今天不想学，或者我想先聊一下。"></textarea><div class="row"><button class="primary" id="voiceCompanion">🎙 开始说话</button><button class="secondary" id="sendCompanion">发送文字</button></div></section>`;
   return "";
 }
@@ -912,6 +921,36 @@ function todaySchedule() {
   return weeklySchedule[new Date(TODAY).getDay()] || weeklySchedule[1];
 }
 
+function todayWeekday() {
+  return new Date(`${TODAY}T00:00:00`).getDay();
+}
+
+function currentMusicPiece() {
+  return { ...hayaoMiyazakiMedley, ...(state.currentMusicPiece || {}) };
+}
+
+function currentMusicTask() {
+  const schedule = todaySchedule();
+  return generateMusicPracticeTask({
+    date: TODAY,
+    energyMode: englishMode(),
+    weekday: todayWeekday(),
+    fixedActivitiesToday: schedule.fixed || [],
+    currentPiece: currentMusicPiece(),
+    recentPracticeLogs: state.musicPracticeLogs || []
+  });
+}
+
+function musicFilesForState() {
+  const piece = currentMusicPiece();
+  return [
+    ...(piece.scoreFiles || []),
+    ...(piece.backingTracks || []),
+    ...(piece.demoTracks || []),
+    ...(state.musicFiles || [])
+  ];
+}
+
 function uniqueList(items) {
   return [...new Set(items)];
 }
@@ -1256,6 +1295,21 @@ function renderBattleReports() {
   </details>`;
 }
 
+function renderMusicLogs() {
+  const piece = currentMusicPiece();
+  const logs = (state.growthUniverse?.musicLogs || state.musicPracticeLogs || []).slice(0, 30);
+  const body = logs.length
+    ? logs
+        .map((log) => `<div class="history"><b>${escapeHtml(log.date)} · ${escapeHtml(piece.title)} ${escapeHtml(musicSectionLabel(piece, log.sectionId))}</b><br>练习：${escapeHtml(log.practicedMinutes)}分钟<br>完成：${(log.completedSteps || []).map(escapeHtml).join(" + ")}<br>大白记录：${escapeHtml(log.nextSuggestion || log.note || "")}</div>`)
+        .join("")
+    : `<div class="history">还没有音乐成长记录。完成一次音乐舱小局后会出现。</div>`;
+  return `<details class="optionalBlock">
+    <summary>🎵 音乐成长记录</summary>
+    <div class="tiny diaryHint">宫崎骏组曲、口琴录音和只改一个点都会收在这里。</div>
+    ${body}
+  </details>`;
+}
+
 function handleDoneClick(key) {
   const next = !state.done[key];
   const wasDone = Boolean(state.done[key]);
@@ -1493,6 +1547,74 @@ function bindAll() {
     save();
     renderPages("home");
     speak("收到。身体记录已经收进成长宇宙。");
+  });
+  document.querySelectorAll("[data-music-upload]").forEach((input) => {
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      state.musicFiles = state.musicFiles || [];
+      const meta = createMusicFileMeta(file, input.dataset.musicUpload);
+      state.musicFiles = [meta, ...state.musicFiles.filter((item) => item.id !== meta.id)].slice(0, 60);
+      if (meta.type === "recording") state.latestMusicRecordingId = meta.id;
+      save();
+      renderPages("home");
+    };
+  });
+  document.querySelector("[data-toggle-score]")?.addEventListener("click", () => {
+    const panel = document.getElementById("scorePanel");
+    if (panel) panel.open = !panel.open;
+  });
+  document.querySelectorAll("[data-play-kind]").forEach((button) => {
+    button.onclick = () => {
+      const kind = button.dataset.playKind;
+      const files = musicFilesForState().filter((file) => file.type === kind);
+      playMusicFile(files[0]);
+    };
+  });
+  document.querySelectorAll("[data-play-music-file]").forEach((button) => {
+    button.onclick = () => playMusicFile(musicFilesForState().find((file) => file.id === button.dataset.playMusicFile));
+  });
+  document.querySelector("[data-speak-music-task]")?.addEventListener("click", () => {
+    const task = currentMusicTask();
+    speak(`${task.title}。${task.why}。今天只听一个点：${task.outputRequirement}`);
+  });
+  ["musicFeeling", "musicMinutes", "musicNote"].forEach((id) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.oninput = () => {
+      const task = currentMusicTask();
+      state.musicDraft = state.musicDraft || {};
+      state.musicDraft[task.id] = {
+        ...(state.musicDraft[task.id] || {}),
+        feeling: document.getElementById("musicFeeling")?.value || "",
+        minutes: document.getElementById("musicMinutes")?.value || "",
+        note: document.getElementById("musicNote")?.value || ""
+      };
+      save();
+    };
+  });
+  document.querySelector("[data-music-complete]")?.addEventListener("click", () => {
+    const piece = currentMusicPiece();
+    const task = currentMusicTask();
+    const recordings = (state.musicFiles || []).filter((file) => file.type === "recording");
+    const log = buildMusicPracticeLog({
+      task,
+      piece,
+      feeling: document.getElementById("musicFeeling")?.value || "比上次顺了",
+      minutes: document.getElementById("musicMinutes")?.value || task.estimatedMinutes,
+      note: document.getElementById("musicNote")?.value.trim() || "",
+      recordingFile: recordings[0]
+    });
+    state.musicPracticeLogs = [log, ...(state.musicPracticeLogs || [])].slice(0, 120);
+    state.musicFeedback = { ...(state.musicFeedback || {}), [task.id]: log.feedback };
+    state.growthUniverse = state.growthUniverse || {};
+    state.growthUniverse.musicLogs = [log, ...(state.growthUniverse.musicLogs || []).filter((item) => item.id !== log.id)].slice(0, 30);
+    state.dailyState = state.dailyState || {};
+    state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "music"])];
+    if (state.done) state.done.task_harmonica = true;
+    save();
+    renderPages("home");
+    speak(`${log.feedback.praise}${log.feedback.onePoint}`);
   });
   document.querySelector("[data-english-complete]")?.addEventListener("click", () => {
     const task = getDailyEnglishTask({ date: TODAY, energyMode: englishMode() });
@@ -1856,6 +1978,20 @@ function fallbackSpeak(text, options = {}) {
   utterance.pitch = 1.04;
   utterance.onend = () => options.afterEnd?.();
   speechSynthesis.speak(utterance);
+}
+
+function playMusicFile(file) {
+  if (!file) {
+    alert("还没有添加这个音频。可以先点“查看曲谱”，在里面上传伴奏或示范。");
+    return;
+  }
+  if (!file.url) {
+    alert("这个文件已经登记了文件名。请在音乐舱里上传一次，浏览器才能播放。");
+    return;
+  }
+  if (audio) audio.pause();
+  audio = new Audio(file.url);
+  audio.play();
 }
 
 function downloadJson(filename, data) {

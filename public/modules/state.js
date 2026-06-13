@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260612-curriculum-1";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260613-music-room-1";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -28,7 +28,13 @@ function normalizeState(raw) {
       dailyState: { ...createInitialState().dailyState, ...(raw.dailyState || {}), date: TODAY, selectedRoom: "", completedRooms: raw.dailyState?.completedRooms || [] },
       bodyLog: raw.bodyLog?.date === TODAY ? raw.bodyLog : createInitialState().bodyLog,
       englishExplore: raw.englishExplore || { ...createInitialState().englishExplore, totalRounds: raw.exploration?.englishTasks || 0 },
-      growthUniverse: raw.growthUniverse || createInitialState().growthUniverse,
+      growthUniverse: { ...createInitialState().growthUniverse, ...(raw.growthUniverse || {}) },
+      musicFiles: raw.musicFiles || [],
+      musicPracticeLogs: raw.musicPracticeLogs || [],
+      musicDraft: raw.musicDraft || {},
+      musicFeedback: raw.musicFeedback || {},
+      currentMusicPiece: raw.currentMusicPiece || null,
+      latestMusicRecordingId: raw.latestMusicRecordingId || "",
       learningSubject: raw.learningSubject || "math",
       learningOutput: raw.learningOutput || {},
       learningFeedback: raw.learningFeedback || {},
@@ -70,7 +76,13 @@ function normalizeState(raw) {
     dailyState: { ...createInitialState().dailyState, ...(raw.dailyState || {}), date: TODAY, selectedRoom: "" },
     bodyLog: raw.bodyLog || createInitialState().bodyLog,
     englishExplore: raw.englishExplore || { ...createInitialState().englishExplore, totalRounds: raw.exploration?.englishTasks || 0 },
-    growthUniverse: raw.growthUniverse || createInitialState().growthUniverse,
+    growthUniverse: { ...createInitialState().growthUniverse, ...(raw.growthUniverse || {}) },
+    musicFiles: raw.musicFiles || [],
+    musicPracticeLogs: raw.musicPracticeLogs || [],
+    musicDraft: raw.musicDraft || {},
+    musicFeedback: raw.musicFeedback || {},
+    currentMusicPiece: raw.currentMusicPiece || null,
+    latestMusicRecordingId: raw.latestMusicRecordingId || "",
     learningSubject: raw.learningSubject || "math",
     learningOutput: raw.learningOutput || {},
     learningFeedback: raw.learningFeedback || {},
@@ -177,6 +189,12 @@ export function snapshotToday() {
     bodyLog: state.bodyLog,
     englishExplore: state.englishExplore,
     growthUniverse: state.growthUniverse,
+    musicFiles: state.musicFiles,
+    musicPracticeLogs: state.musicPracticeLogs,
+    musicDraft: state.musicDraft,
+    musicFeedback: state.musicFeedback,
+    currentMusicPiece: state.currentMusicPiece,
+    latestMusicRecordingId: state.latestMusicRecordingId,
     phrases: state.phrases,
     profile: state.profile,
     dabai: state.dabai,

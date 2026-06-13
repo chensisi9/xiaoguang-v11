@@ -197,8 +197,8 @@ export const weeklySchedule = {
     day: "周二",
     title: "口琴课日",
     school: "15:20 放学",
-    fixed: ["口琴课", "17:00 下课"],
-    energy: "口琴课已经算音乐训练，晚上不再加口琴。",
+    fixed: ["16:00-17:00 口琴课"],
+    energy: "口琴课已经算音乐训练，晚上只做课后轻复盘。",
     requiredOverride: ["math", "english", "chinese"],
     optionalExtra: ["tennis"],
     pausedExtra: ["harmonica"],
@@ -206,7 +206,7 @@ export const weeklySchedule = {
       math: "周二：人教四下 6道计算/简算 + 1个错因，下课后短练即可。",
       english: "周二：精通四下听读1小段 + 2组问答。",
       chinese: "周二：人教四下1个课内点，只说画面/中心。",
-      harmonica: "今天已有口琴课，算完成方向，不再额外练。",
+      harmonica: "今天已有16:00-17:00口琴课，音乐舱只做课后轻复盘。",
       tennis: "可选：5分钟小垫步或挥拍。"
     }
   },
@@ -627,12 +627,18 @@ export function createInitialState() {
       taskTitle: "",
       date: ""
     },
+    musicFiles: [],
+    musicPracticeLogs: [],
+    musicDraft: {},
+    musicFeedback: {},
+    currentMusicPiece: null,
     growthUniverse: {
       routeDays: 0,
       badges: [],
       dailyStories: [],
       bodyLogs: [],
-      englishProgress: []
+      englishProgress: [],
+      musicLogs: []
     },
     phrases: {
       greeting: "",
