@@ -1,8 +1,8 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260613-music-room-1";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260613-pig-nature-1";
 import { bodyPhrases, encouragementPhrases, getDailyDabaiLine, getRoomPhrase, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-phrases-1";
 import { renderEnglishExploreRoom } from "./modules/EnglishExploreRoom.js?v=20260612-english-route-1";
 import { getDailyEnglishTask, getEnglishOnePointFeedback } from "./modules/englishPlan.js?v=20260612-english-route-1";
-import { renderContentLibrary, renderLearningRoom } from "./modules/LearningRoom.js?v=20260612-curriculum-1";
+import { renderContentLibrary, renderLearningRoom } from "./modules/LearningRoom.js?v=20260613-pig-nature-1";
 import { buildMusicPracticeLog, createMusicFileMeta, renderMusicRoom } from "./modules/MusicRoom.js?v=20260613-music-room-1";
 import { generateMusicPracticeTask, hayaoMiyazakiMedley, musicSectionLabel } from "./modules/musicPlan.js?v=20260613-music-room-1";
 import { generateDailyLearningTask, generateOnePointFeedback, nextReviewDate } from "./modules/curriculumEngine.js?v=20260612-curriculum-1";
@@ -20,7 +20,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260613-music-room-1";
+} from "./modules/state.js?v=20260613-pig-nature-1";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -164,6 +164,68 @@ const moduleLaunchers = [
   ["chat", "💬", "聊聊天", "大白在听"]
 ];
 
+const pigAvatarCatalog = [
+  { id: "pig-default", face: "🐷", name: "原始猪头" },
+  { id: "pig-leaf", face: "🐷🌿", name: "森林猪头" },
+  { id: "pig-rain", face: "🐷☔", name: "雨天猪头" },
+  { id: "pig-star", face: "🐷✨", name: "星光猪头" },
+  { id: "pig-tennis", face: "🐷🎾", name: "网球猪头" },
+  { id: "pig-music", face: "🐷🎵", name: "音乐猪头" },
+  { id: "pig-space", face: "🐷🚀", name: "太空猪头" }
+];
+
+const natureWallpapers = [
+  {
+    id: "forest",
+    label: "森林晨光",
+    weather: "clear",
+    image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1800&q=80",
+    overlay: "linear-gradient(135deg, rgba(4,10,22,.82), rgba(8,34,36,.58), rgba(7,9,20,.88))"
+  },
+  {
+    id: "lake",
+    label: "湖面蓝光",
+    weather: "clear",
+    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=80",
+    overlay: "linear-gradient(135deg, rgba(2,8,20,.78), rgba(11,50,68,.5), rgba(3,9,20,.9))"
+  },
+  {
+    id: "mountain",
+    label: "远山云层",
+    weather: "cloud",
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1800&q=80",
+    overlay: "linear-gradient(135deg, rgba(4,8,18,.82), rgba(40,54,74,.55), rgba(6,10,22,.88))"
+  },
+  {
+    id: "rain",
+    label: "雨后森林",
+    weather: "rain",
+    image: "https://images.unsplash.com/photo-1503435824048-a799a3a84bf7?auto=format&fit=crop&w=1800&q=80",
+    overlay: "linear-gradient(135deg, rgba(3,8,18,.86), rgba(21,45,58,.64), rgba(2,6,16,.9))"
+  },
+  {
+    id: "sunset",
+    label: "日落海岸",
+    weather: "clear",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+    overlay: "linear-gradient(135deg, rgba(4,8,20,.84), rgba(55,35,52,.52), rgba(4,8,20,.9))"
+  },
+  {
+    id: "night",
+    label: "夜空山谷",
+    weather: "night",
+    image: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=1800&q=80",
+    overlay: "linear-gradient(135deg, rgba(2,5,14,.9), rgba(12,26,50,.58), rgba(3,7,18,.92))"
+  },
+  {
+    id: "field",
+    label: "草地晴空",
+    weather: "clear",
+    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1800&q=80",
+    overlay: "linear-gradient(135deg, rgba(5,9,19,.8), rgba(18,54,45,.52), rgba(5,10,20,.9))"
+  }
+];
+
 const dabaiPromptLines = [
   "今天不用猛冲。",
   "先拿下一个小目标。",
@@ -298,6 +360,147 @@ function addDays(dateString, offset) {
   const date = new Date(Date.UTC(year, month - 1, day));
   date.setUTCDate(date.getUTCDate() + offset);
   return date.toISOString().slice(0, 10);
+}
+
+function weatherTone() {
+  if (state.localWeather?.date === TODAY && state.localWeather?.tone) return state.localWeather.tone;
+  const status = typeof effectiveBodyStatus === "function" ? effectiveBodyStatus() : state.dailyState?.bodyStatus || "";
+  const hour = new Date().getHours();
+  if (status === "rain") return "rain";
+  if (hour >= 19 || hour < 6) return "night";
+  if (state.weather === "有点累" || state.weather === "不想学") return "cloud";
+  return "clear";
+}
+
+function todaysNatureWallpaper() {
+  const tone = weatherTone();
+  const candidates = natureWallpapers.filter((item) => item.weather === tone);
+  const list = candidates.length ? candidates : natureWallpapers;
+  return list[daySeed(tone.length) % list.length];
+}
+
+function applyNatureBackdrop() {
+  const wallpaper = todaysNatureWallpaper();
+  document.documentElement.style.setProperty("--nature-wallpaper", `url("${wallpaper.image}")`);
+  document.documentElement.style.setProperty("--nature-overlay", wallpaper.overlay);
+  document.body.dataset.natureWeather = wallpaper.weather;
+  document.body.dataset.natureLabel = wallpaper.label;
+}
+
+function ensurePigRewards() {
+  const base = {
+    fragments: 0,
+    todayDate: TODAY,
+    todayFragments: [],
+    unlockedAvatars: ["pig-default"],
+    activeAvatarId: "pig-default",
+    todayUnlockId: ""
+  };
+  state.pigRewards = { ...base, ...(state.pigRewards || {}) };
+  if (state.pigRewards.todayDate !== TODAY) {
+    state.pigRewards.todayDate = TODAY;
+    state.pigRewards.todayFragments = [];
+    state.pigRewards.todayUnlockId = "";
+  }
+  if (!state.pigRewards.unlockedAvatars?.length) state.pigRewards.unlockedAvatars = ["pig-default"];
+  if (!state.pigRewards.activeAvatarId) state.pigRewards.activeAvatarId = "pig-default";
+  return state.pigRewards;
+}
+
+function activePigAvatar() {
+  const rewards = ensurePigRewards();
+  return pigAvatarCatalog.find((avatar) => avatar.id === rewards.activeAvatarId) || pigAvatarCatalog[0];
+}
+
+function nextDailyPigAvatar() {
+  const rewards = ensurePigRewards();
+  const locked = pigAvatarCatalog.filter((avatar) => !rewards.unlockedAvatars.includes(avatar.id));
+  if (!locked.length) return pigAvatarCatalog[daySeed(17) % pigAvatarCatalog.length];
+  return locked[daySeed(rewards.fragments + 9) % locked.length];
+}
+
+function allRequiredTasksDone() {
+  const required = requiredTasks();
+  return required.length > 0 && required.every((task) => state.done?.[`task_${task.id}`]);
+}
+
+function awardPigFragment(task) {
+  if (!task?.id) return null;
+  const rewards = ensurePigRewards();
+  if (rewards.todayFragments.some((item) => item.taskId === task.id)) return null;
+  const fragment = {
+    id: `${TODAY}-${task.id}`,
+    taskId: task.id,
+    label: task.title || taskNameById(task.id),
+    createdAt: new Date().toISOString()
+  };
+  rewards.todayFragments.push(fragment);
+  rewards.fragments = (rewards.fragments || 0) + 1;
+  let unlocked = null;
+  if (allRequiredTasksDone() && !rewards.todayUnlockId) {
+    unlocked = nextDailyPigAvatar();
+    rewards.todayUnlockId = unlocked.id;
+    rewards.activeAvatarId = unlocked.id;
+    if (!rewards.unlockedAvatars.includes(unlocked.id)) rewards.unlockedAvatars.push(unlocked.id);
+  }
+  return { fragment, unlocked };
+}
+
+function renderPigAvatar(size = "large") {
+  const avatar = activePigAvatar();
+  if (size === "tiny") return `<span class="pigAvatar pigAvatar-tiny" title="${escapeHtml(avatar.name)}"><span>${escapeHtml(avatar.face)}</span></span>`;
+  return `<div class="pigAvatar pigAvatar-${size}" title="${escapeHtml(avatar.name)}"><span>${escapeHtml(avatar.face)}</span></div>`;
+}
+
+function renderPigRewardPanel() {
+  const rewards = ensurePigRewards();
+  const required = requiredTasks();
+  const fragmentCount = rewards.todayFragments.length;
+  const total = required.length || 1;
+  const dots = Array.from({ length: total }, (_, index) => index < fragmentCount ? "◆" : "◇").join("");
+  const unlocked = pigAvatarCatalog.find((avatar) => avatar.id === rewards.todayUnlockId);
+  return `<div class="pigRewardPanel">
+    <div><b>今日猪头碎片</b><span>${escapeHtml(dots)}</span></div>
+    <small>${fragmentCount}/${total} · 完成一项得一块碎片</small>
+    ${unlocked ? `<small class="pigUnlocked">新猪头已解锁：${escapeHtml(unlocked.face)} ${escapeHtml(unlocked.name)}</small>` : `<small>全部完成，会得到一个新猪头头像。</small>`}
+  </div>`;
+}
+
+function renderNatureBadge() {
+  const wallpaper = todaysNatureWallpaper();
+  const weatherText = state.localWeather?.date === TODAY ? ` · ${state.localWeather.label}` : "";
+  return `<div class="natureBadge">🌿 今日壁纸 · ${escapeHtml(wallpaper.label)}${escapeHtml(weatherText)} <button type="button" data-sync-weather>同步天气</button></div>`;
+}
+
+function wmoWeather(code) {
+  const value = Number(code);
+  if ([0, 1].includes(value)) return { tone: "clear", label: "当地晴朗" };
+  if ([2, 3, 45, 48].includes(value)) return { tone: "cloud", label: "当地多云" };
+  if ((value >= 51 && value <= 67) || (value >= 80 && value <= 82) || (value >= 95 && value <= 99)) return { tone: "rain", label: "当地有雨" };
+  if (value >= 71 && value <= 77) return { tone: "cloud", label: "当地有雪" };
+  return { tone: "clear", label: "当地天气已同步" };
+}
+
+function syncLocalWeather() {
+  if (!navigator.geolocation) {
+    alert("这个浏览器暂时不能读取当地天气。");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    try {
+      const { latitude, longitude } = position.coords;
+      const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(3)}&longitude=${longitude.toFixed(3)}&current=weather_code&timezone=auto`);
+      const data = await response.json();
+      const weather = wmoWeather(data.current?.weather_code);
+      state.localWeather = { date: TODAY, ...weather, syncedAt: new Date().toISOString() };
+      save();
+      renderPages("home");
+    } catch {
+      alert("天气同步没成功。没关系，今天先用大白的自然壁纸。");
+    }
+  }, () => {
+    alert("没有拿到定位权限。没关系，今天先用大白的自然壁纸。");
+  }, { enableHighAccuracy: false, timeout: 7000, maximumAge: 60 * 60 * 1000 });
 }
 
 function pickDaily(list, extra = 0) {
@@ -735,7 +938,7 @@ function dabaiBuddyLines() {
 function renderDabaiBuddy() {
   const lines = dabaiBuddyLines();
   return `<aside class="dabaiBuddy">
-    <h3>🤖 大白</h3>
+    <h3>${renderPigAvatar("tiny")} 大白</h3>
     <p><b>今天状态：</b><br>${escapeHtml(lines.status)}</p>
     <p><b>今天观察：</b><br>${escapeHtml(lines.observation)}</p>
     <p><b>今天建议：</b><br>${escapeHtml(lines.suggestion)}</p>
@@ -851,6 +1054,7 @@ function showPage(id) {
 }
 
 function renderPages(activeId = document.querySelector(".page.active")?.id || "home") {
+  applyNatureBackdrop();
   pages.innerHTML = pagesDef.map((page) => `<section id="${page.id}" class="page ${page.id === activeId ? "active" : ""}">${renderPage(page)}</section>`).join("");
   bindAll();
   showPage(activeId);
@@ -1133,10 +1337,10 @@ function choiceButtons(field, options) {
 function taskNoteCopy(task, key) {
   const map = {
     math: {
-      answer: ["数学答案", "可以直接说：答案是3.6；第一步先对齐小数点。"],
-      explain: ["我是怎么想的", "可以直接说：我先看单位，再列式，最后检查小数点。"],
-      today: ["今天算了什么", "例如：5道小数加减 / 2道简算 / 1道三角形题"],
-      focus: ["今天只改一个点", "例如：等号对齐 / 单位写完整 / 最后验算一次"]
+      answer: ["完整数学表达", "请完整说：题目要求___；我的算式是___；答案是___。"],
+      explain: ["我是怎么想的", "请完整说：我先看___，再___，因为___。"],
+      today: ["今天算了什么", "例如：小数加减完整题1道 / 三角形判断题1道 / 平均数题1道"],
+      focus: ["今天只改一个点", "例如：题目要求先说清 / 算式写完整 / 单位写完整 / 最后验算一次"]
     },
     english: {
       answer: ["英文句子", "可以直接说：I think tennis is fun because ___. / I heard ___."],
@@ -1322,6 +1526,7 @@ function handleDoneClick(key) {
       state.exploration.englishTasks = (state.exploration.englishTasks || 0) + 1;
     }
     const badge = awardBadge(task);
+    awardPigFragment(task);
     addGrowthDiary(task);
     updateBattleReport(task, badge);
     save();
@@ -1346,11 +1551,13 @@ const renderers = {
     if (!state.activeModule) {
       return `<div class="baseHome">
         <section class="card baseCard">
-          <div class="dabaiAvatar">🤖</div>
+          ${renderPigAvatar("large")}
           <div class="pill">大白在等你</div>
           <h2>大白</h2>
           <p class="dabaiLine">${escapeHtml(lines[0])}</p>
           <p class="oneSentence">${escapeHtml(lines[1])}</p>
+          ${renderNatureBadge()}
+          ${renderPigRewardPanel()}
           <h3 class="moduleQuestion">选一个房间</h3>
           ${renderModuleLaunchers()}
           <button class="universeLink" data-module="universe">📜 看看我的成长宇宙</button>
@@ -1361,6 +1568,7 @@ const renderers = {
     return `<div class="roomShell">
       <section class="roomTop card">
         <button class="secondary backHome" data-room-home>← 回到大白</button>
+        ${renderPigAvatar("small")}
         <div>
           <div class="pill">${escapeHtml(moduleTitle(state.activeModule))}</div>
           <h2>${escapeHtml(roomLine.encouragement)}</h2>
@@ -1503,6 +1711,7 @@ function bindAll() {
       renderPages("home");
     };
   });
+  document.querySelector("[data-sync-weather]")?.addEventListener("click", syncLocalWeather);
   document.querySelectorAll("[data-learning-subject]").forEach((button) => {
     button.onclick = () => {
       state.learningSubject = button.dataset.learningSubject || "math";
@@ -1544,6 +1753,10 @@ function bindAll() {
     state.growthUniverse = state.growthUniverse || {};
     state.growthUniverse.bodyLogs = [state.bodyLog, ...(state.growthUniverse.bodyLogs || []).filter((log) => log.date !== TODAY)].slice(0, 30);
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "body"])];
+    if (status === "tennis") {
+      state.done.task_tennis = true;
+      awardPigFragment(taskByDoneKey("task_tennis"));
+    }
     save();
     renderPages("home");
     speak("收到。身体记录已经收进成长宇宙。");
@@ -1611,7 +1824,10 @@ function bindAll() {
     state.growthUniverse.musicLogs = [log, ...(state.growthUniverse.musicLogs || []).filter((item) => item.id !== log.id)].slice(0, 30);
     state.dailyState = state.dailyState || {};
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "music"])];
-    if (state.done) state.done.task_harmonica = true;
+    if (state.done) {
+      state.done.task_harmonica = true;
+      awardPigFragment(taskByDoneKey("task_harmonica"));
+    }
     save();
     renderPages("home");
     speak(`${log.feedback.praise}${log.feedback.onePoint}`);
@@ -1644,6 +1860,8 @@ function bindAll() {
     }, ...(state.growthUniverse.englishProgress || [])].slice(0, 30);
     state.dailyState = state.dailyState || {};
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "english"])];
+    state.done.task_english = true;
+    awardPigFragment(taskByDoneKey("task_english"));
     save();
     renderPages("home");
     speak(feedback.text);
@@ -1746,6 +1964,9 @@ function bindAll() {
     state.masteryLog = state.masteryLog.slice(0, 365);
     state.dailyState = state.dailyState || {};
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "learning"])];
+    const doneKey = subject === "chinese" ? "task_chinese" : subject === "englishSchool" ? "task_english" : "task_math";
+    state.done[doneKey] = true;
+    awardPigFragment(taskByDoneKey(doneKey));
     save();
     renderPages("home");
     speak(`${feedback.praise}${feedback.onePoint}${feedback.example ? `例：${feedback.example}` : ""}`);

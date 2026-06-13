@@ -1,5 +1,5 @@
-import { allLessons } from "./curriculumData.js?v=20260612-curriculum-1";
-import { generateDailyLearningTask } from "./curriculumEngine.js?v=20260612-curriculum-1";
+import { allLessons } from "./curriculumData.js?v=20260613-pig-nature-1";
+import { generateDailyLearningTask } from "./curriculumEngine.js?v=20260613-pig-nature-1";
 
 const subjectOptions = [
   ["math", "数学"],
@@ -47,7 +47,7 @@ export function renderLearningRoom({ state, today, energyMode, escapeHtml }) {
 }
 
 function outputPlaceholder(subject) {
-  if (subject === "math") return "可以直接说：答案是3.6；我先对齐小数点，因为相同数位才能相加减。";
+  if (subject === "math") return "请完整说：题目要求___；我的算式是___；答案是___；我这样做是因为___。";
   if (subject === "chinese") return "可以直接说：这一段写了___，我仿写一句___。";
   if (subject === "englishSchool" || subject === "longman") return "可以直接说：I usually play tennis on Friday.";
   return "可以直接说：我今天讲清楚了一个小点。";

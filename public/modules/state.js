@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260613-music-room-1";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260613-pig-nature-1";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -22,6 +22,8 @@ function normalizeState(raw) {
       growthDiary: raw.growthDiary || [],
       battleReports: raw.battleReports || [],
       badges: raw.badges || { earned: [], today: [] },
+      pigRewards: raw.pigRewards || createInitialState().pigRewards,
+      localWeather: raw.localWeather || createInitialState().localWeather,
       exploration: raw.exploration || { englishTasks: 0 },
       profile: raw.profile || createInitialState().profile,
       userProfile: raw.userProfile || createInitialState().userProfile,
@@ -69,6 +71,8 @@ function normalizeState(raw) {
     growthDiary: raw.growthDiary || [],
     battleReports: raw.battleReports || [],
     badges: raw.badges || { earned: [], today: [] },
+    pigRewards: raw.pigRewards || createInitialState().pigRewards,
+    localWeather: raw.localWeather || createInitialState().localWeather,
     exploration: raw.exploration || { englishTasks: 0 },
     feedbackBubble: raw.feedbackBubble || null,
     profile: raw.profile || createInitialState().profile,
@@ -183,6 +187,8 @@ export function snapshotToday() {
     growthDiary: state.growthDiary,
     battleReports: state.battleReports,
     badges: state.badges,
+    pigRewards: state.pigRewards,
+    localWeather: state.localWeather,
     exploration: state.exploration,
     userProfile: state.userProfile,
     dailyState: state.dailyState,

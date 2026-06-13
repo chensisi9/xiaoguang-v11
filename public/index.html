@@ -201,6 +201,27 @@ textarea::placeholder,input::placeholder{color:#71869b}
 .onePointBubble p{margin:8px 0 0;line-height:1.5;font-size:13px}
 @media(max-width:920px){.app{padding:10px}.hero,.focusTop,.coachGrid,.choiceGrid.statusGrid,.miniGrid,.dabaiStatusGrid,.universeGrid,.companionLayout,.roomTop{grid-template-columns:1fr}.companionRail{position:static}.moduleGrid,.baseCard .moduleGrid,.bodyStatusGrid{grid-template-columns:1fr 1fr}.hero{padding:14px}.focusCard h2,.sectionTitle h2{font-size:21px}.companionHome h2{font-size:24px}.baseCard{padding:18px}.baseCard h2{font-size:28px}.sectionTitle{align-items:start}.ladder{grid-template-columns:1fr 1fr}.dabaiBuddy,.onePointBubble{position:static;width:auto;margin-top:10px}.countryRail{gap:5px}.voyageDots{font-size:16px;letter-spacing:1px}}
 </style>
+<style>
+:root{--nature-wallpaper:none;--nature-overlay:linear-gradient(135deg,rgba(5,9,20,.86),rgba(12,25,45,.62),rgba(5,9,20,.9))}
+body{background:#050914;color:var(--ink)}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background-image:var(--nature-overlay),var(--nature-wallpaper);background-size:cover;background-position:center;background-attachment:fixed;filter:saturate(1.05);transform:scale(1.02)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background-image:linear-gradient(rgba(116,204,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(116,204,255,.045) 1px,transparent 1px);background-size:34px 34px;pointer-events:none}
+.pigAvatar{display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,207,122,.35);box-shadow:0 16px 50px rgba(0,0,0,.28),0 0 28px rgba(255,207,122,.12);line-height:1}
+.pigAvatar span{filter:drop-shadow(0 8px 16px rgba(0,0,0,.22))}
+.pigAvatar-large{width:98px;height:98px;margin:0 auto 12px;border-radius:28px;font-size:54px}
+.pigAvatar-small{width:54px;height:54px;border-radius:16px;font-size:30px}
+.pigAvatar-tiny{display:inline-grid;width:28px;height:28px;border-radius:9px;font-size:17px;margin-right:6px;vertical-align:middle}
+.natureBadge{display:inline-flex;margin:10px auto 0;padding:7px 10px;border-radius:8px;background:rgba(103,232,249,.09);border:1px solid rgba(103,232,249,.22);color:#d7fbff;font-size:13px;font-weight:850}
+.natureBadge button{margin-left:8px;border:0;border-left:1px solid rgba(103,232,249,.25);background:transparent;color:#ffcf7a;font-weight:900;cursor:pointer;padding-left:8px}
+.pigRewardPanel{margin:12px auto 0;max-width:420px;padding:11px 12px;border-radius:10px;background:rgba(255,207,122,.1);border:1px solid rgba(255,207,122,.28);color:#ffe8b8;text-align:left}
+.pigRewardPanel div{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.pigRewardPanel b{color:#fff}
+.pigRewardPanel span{color:#ffcf7a;letter-spacing:3px;font-size:18px}
+.pigRewardPanel small{display:block;margin-top:5px;color:#d8f6ff;line-height:1.35}
+.pigRewardPanel .pigUnlocked{color:#ffcf7a;font-weight:900}
+.roomTop{grid-template-columns:auto auto minmax(0,1fr)}
+.dabaiBuddy h3{display:flex;align-items:center;gap:4px}
+</style>
 </head>
 <body>
 <div class="app">
@@ -219,6 +240,6 @@ textarea::placeholder,input::placeholder{color:#71869b}
 <main id="pages"></main>
 <footer class="footer"><div>今天陪大白赢下一小局。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260613-music-room-1"></script>
+<script type="module" src="./app.js?v=20260613-pig-nature-1"></script>
 </body>
 </html>
