@@ -1,8 +1,8 @@
-import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260613-pig-nature-1";
+import { baobaoProfile, companionLines, companionProfile, dadMessages, dailyResourceTracks, exampleBank, finalReviewPlan, humanToneLines, pagesDef, progressKeys, studyMaterials, teacherSubjects, TODAY, weeklySchedule } from "./modules/schema.js?v=20260613-voice-reward-1";
 import { bodyPhrases, encouragementPhrases, getDailyDabaiLine, getRoomPhrase, seededPhrase } from "./modules/dabaiPhrases.js?v=20260612-phrases-1";
 import { renderEnglishExploreRoom } from "./modules/EnglishExploreRoom.js?v=20260612-english-route-1";
 import { getDailyEnglishTask, getEnglishOnePointFeedback } from "./modules/englishPlan.js?v=20260612-english-route-1";
-import { renderContentLibrary, renderLearningRoom } from "./modules/LearningRoom.js?v=20260613-pig-nature-1";
+import { renderContentLibrary, renderLearningRoom } from "./modules/LearningRoom.js?v=20260613-voice-reward-1";
 import { buildMusicPracticeLog, createMusicFileMeta, renderMusicRoom } from "./modules/MusicRoom.js?v=20260613-music-room-1";
 import { generateMusicPracticeTask, hayaoMiyazakiMedley, musicSectionLabel } from "./modules/musicPlan.js?v=20260613-music-room-1";
 import { generateDailyLearningTask, generateOnePointFeedback, nextReviewDate } from "./modules/curriculumEngine.js?v=20260612-curriculum-1";
@@ -20,7 +20,7 @@ import {
   setQuietMode,
   snapshotToday,
   state
-} from "./modules/state.js?v=20260613-pig-nature-1";
+} from "./modules/state.js?v=20260613-voice-reward-1";
 
 const nav = document.getElementById("nav");
 const pages = document.getElementById("pages");
@@ -124,9 +124,9 @@ const wakeTitles = {
     "零重力训练日：今天抓一个陷阱"
   ],
   "还行": [
-    "轨道巡航日：少一点，但要准",
+    "碎片收集日：少一点，但要准",
     "小队推进日：三科各赢一小局",
-    "稳定航线日：不用猛冲，保持航线"
+    "稳定小局日：不用猛冲，收一块碎片"
   ],
   "有点累": [
     "低电量护盾日：只做关键球",
@@ -246,7 +246,7 @@ const dabaiPromptLines = [
   "把声音说出来，大白帮你接住。",
   "今天的目标不是多，是准。",
   "小队长，先选一个入口。",
-  "航线亮一下就很好。",
+  "碎片亮一下就很好。",
   "错因不是坏事，是线索。",
   "不用证明自己很厉害，先开局。",
   "今天适合短回合。",
@@ -259,7 +259,7 @@ const dabaiPromptLines = [
   "今天先从最容易的一项进舱。",
   "你可以选学习，也可以先聊天。",
   "我不会催你，但我会陪你开始。",
-  "慢一点也算在航线上。",
+  "慢一点也能收进今天。",
   "今天不用把所有事情都解决。",
   "一个清楚答案，比十个糊涂答案更值。",
   "开口就是启动。",
@@ -277,7 +277,7 @@ const dabaiPromptLines = [
   "运动动作只改一个点。",
   "今天的你，不需要被比较。",
   "先和我打个招呼也可以。",
-  "我在等你重新起航。",
+  "我在等你回来继续。",
   "今天适合轻装上场。",
   "你的想法先出来，标准答案后面再说。",
   "少一点，准一点。",
@@ -293,10 +293,10 @@ const dabaiPromptLines = [
   "像战斗教室一样，先定一个动作。",
   "错误会告诉我们下一步。",
   "你已经不是从零开始。",
-  "先把航线点亮。",
+  "先把碎片点亮。",
   "我喜欢你认真讲思路的时候。",
   "大白不会给你排行榜。",
-  "今天没有惩罚，只有重新起航。",
+  "今天没有惩罚，回来继续就好。",
   "先挑一个你不讨厌的入口。",
   "你可以用声音，不一定要打字。",
   "我会帮你把话变清楚。",
@@ -323,7 +323,7 @@ const dabaiPromptLines = [
   "未来出国这条线，不用每天很重，但要不断。",
   "先把今天过成一个故事。",
   "别急，我在。",
-  "你的航线不是直线，也没关系。",
+  "你的成长不是直线，也没关系。",
   "今天只需要一个开始。",
   "你来选，大白跟上。",
   "我会把你的进步藏进宇宙里。",
@@ -437,13 +437,28 @@ function awardPigFragment(task) {
   rewards.todayFragments.push(fragment);
   rewards.fragments = (rewards.fragments || 0) + 1;
   let unlocked = null;
-  if (allRequiredTasksDone() && !rewards.todayUnlockId) {
+  const shouldUnlock = allRequiredTasksDone() || rewards.fragments % 3 === 0;
+  if (shouldUnlock && !rewards.todayUnlockId) {
     unlocked = nextDailyPigAvatar();
     rewards.todayUnlockId = unlocked.id;
     rewards.activeAvatarId = unlocked.id;
     if (!rewards.unlockedAvatars.includes(unlocked.id)) rewards.unlockedAvatars.push(unlocked.id);
   }
   return { fragment, unlocked };
+}
+
+function setCompletionResult({ title, message = "", reward = null, feedback = "" }) {
+  const fragmentLine = reward?.fragment ? `获得碎片：${reward.fragment.label}` : "";
+  const unlockLine = reward?.unlocked ? `新猪头：${reward.unlocked.face} ${reward.unlocked.name}` : "";
+  state.completionResult = {
+    date: TODAY,
+    title,
+    message,
+    fragmentLine,
+    unlockLine,
+    feedback,
+    createdAt: new Date().toISOString()
+  };
 }
 
 function renderPigAvatar(size = "large") {
@@ -461,15 +476,40 @@ function renderPigRewardPanel() {
   const unlocked = pigAvatarCatalog.find((avatar) => avatar.id === rewards.todayUnlockId);
   return `<div class="pigRewardPanel">
     <div><b>今日猪头碎片</b><span>${escapeHtml(dots)}</span></div>
-    <small>${fragmentCount}/${total} · 完成一项得一块碎片</small>
-    ${unlocked ? `<small class="pigUnlocked">新猪头已解锁：${escapeHtml(unlocked.face)} ${escapeHtml(unlocked.name)}</small>` : `<small>全部完成，会得到一个新猪头头像。</small>`}
+    <small>今日 ${fragmentCount} 块 · 完成一项得一块碎片</small>
+    ${unlocked ? `<small class="pigUnlocked">新猪头已解锁：${escapeHtml(unlocked.face)} ${escapeHtml(unlocked.name)}</small>` : `<small>集满 3 块或完成全部，会得到一个新猪头头像。</small>`}
+    ${renderAvatarPicker()}
+  </div>`;
+}
+
+function renderAvatarPicker() {
+  const rewards = ensurePigRewards();
+  return `<div class="avatarPicker">
+    <b>换头像</b>
+    <div>${pigAvatarCatalog.map((avatar) => {
+      const unlocked = rewards.unlockedAvatars.includes(avatar.id);
+      const active = rewards.activeAvatarId === avatar.id;
+      return `<button type="button" class="${active ? "active" : ""}" data-pig-avatar="${escapeHtml(avatar.id)}" ${unlocked ? "" : "disabled"} title="${escapeHtml(unlocked ? avatar.name : "还没解锁")}">${escapeHtml(unlocked ? avatar.face : "🔒")}</button>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function renderCompletionResult() {
+  const result = state.completionResult;
+  if (!result || result.date !== TODAY) return "";
+  return `<div class="completionResult">
+    <b>${escapeHtml(result.title || "完成了")}</b>
+    <span>${escapeHtml(result.message || result.fragmentLine || "")}</span>
+    ${result.fragmentLine ? `<small>${escapeHtml(result.fragmentLine)}</small>` : ""}
+    ${result.unlockLine ? `<small class="pigUnlocked">${escapeHtml(result.unlockLine)}</small>` : ""}
+    ${result.feedback ? `<small>${escapeHtml(result.feedback)}</small>` : ""}
   </div>`;
 }
 
 function renderNatureBadge() {
   const wallpaper = todaysNatureWallpaper();
   const weatherText = state.localWeather?.date === TODAY ? ` · ${state.localWeather.label}` : "";
-  return `<div class="natureBadge">🌿 今日壁纸 · ${escapeHtml(wallpaper.label)}${escapeHtml(weatherText)} <button type="button" data-sync-weather>同步天气</button></div>`;
+  return `<div class="natureBadge">🌿 今日壁纸 · ${escapeHtml(wallpaper.label)}${escapeHtml(weatherText)} <button type="button" data-sync-weather>同步天气定位</button></div>`;
 }
 
 function wmoWeather(code) {
@@ -486,6 +526,13 @@ function syncLocalWeather() {
     alert("这个浏览器暂时不能读取当地天气。");
     return;
   }
+  setCompletionResult({
+    title: "天气定位",
+    message: "浏览器会请求定位权限，只用来切换今天的自然壁纸。",
+    feedback: "如果没有弹窗，可以检查浏览器地址栏的定位权限。"
+  });
+  save();
+  renderPages("home");
   navigator.geolocation.getCurrentPosition(async (position) => {
     try {
       const { latitude, longitude } = position.coords;
@@ -525,7 +572,7 @@ function onlineDayCount() {
 }
 
 function dabaiMood() {
-  return pickDaily(["有点兴奋", "安静在线", "想陪你赢一小局", "低声巡航", "准备听你说"], taskDoneCount() + 8);
+  return pickDaily(["有点兴奋", "安静在线", "想陪你赢一小局", "安静陪伴", "准备听你说"], taskDoneCount() + 8);
 }
 
 function activePromptLine() {
@@ -727,11 +774,10 @@ function visibleBodyStatusOptions() {
 }
 
 function renderUniverseSnapshot() {
-  const voyage = voyageState();
   return `<section class="card universeSnapshot">
     <div class="sectionTitle"><div><div class="pill">成长宇宙</div><h2>今天的大白记录</h2></div><div class="status">${escapeHtml(todayBadgesText())}</div></div>
     <div class="universeGrid">
-      <div class="miniUniverse"><b>⚓ 航线</b><span>${escapeHtml(voyage.dots)}</span><small>${escapeHtml(voyage.nextText)}</small></div>
+      <div class="miniUniverse"><b>🐷 猪头碎片</b><span>${escapeHtml((state.pigRewards?.todayFragments || []).length)} 块</span><small>完成小局后自动收集。</small></div>
       <div class="miniUniverse"><b>🏆 成就收藏</b><span>${escapeHtml(todayBadgesText())}</span><small>只是收藏，不兑换。</small></div>
       <div class="miniUniverse"><b>📜 成长故事</b><span>${escapeHtml((state.battleReports || [])[0]?.records?.[0] || "还在写今天的故事")}</span><small>赢下一小局就会出现。</small></div>
     </div>
@@ -793,7 +839,7 @@ function awardBadge(task) {
 
 function todayBadgesText() {
   const today = ensureBadges().today;
-  return today.length ? today.map(badgeLabel).join("  ") : "还在巡航";
+  return today.length ? today.map(badgeLabel).join("  ") : "还在收集";
 }
 
 function explorationState() {
@@ -807,7 +853,7 @@ function explorationState() {
 function renderExploreMap() {
   const explore = explorationState();
   const stepCount = explore.count % 10;
-  const stepText = explore.index >= exploreCountries.length - 1 ? "航线已到远方" : `${stepCount}/10`;
+  const stepText = explore.index >= exploreCountries.length - 1 ? "已经到远方" : `${stepCount}/10`;
   return `<div class="exploreMini">
     <div class="tiny">🌎 探索进度 · 英语 ${stepText}</div>
     <div class="countryRail">${exploreCountries.map(([name, flag], index) => `<span class="${index <= explore.index ? "active" : ""}">${name} ${flag}</span>`).join("<b>↓</b>")}</div>
@@ -826,8 +872,8 @@ function voyageState() {
   const done = taskDoneCount();
   const keptToday = voyage.lastKeptDate === TODAY;
   const waiting = !keptToday && voyage.count > 0 && dateDiffDays(voyage.lastKeptDate) > 1;
-  const countText = waiting || !voyage.count ? "大白等你重新起航" : `第 ${voyage.count} 天`;
-  const nextText = done >= 2 ? "今日稳定完成" : done >= 1 ? "航线保持成功" : "今日完成后：航线 +1";
+  const countText = waiting || !voyage.count ? "大白等你回来继续" : `第 ${voyage.count} 天`;
+  const nextText = done >= 2 ? "今日稳定完成" : done >= 1 ? "碎片收集成功" : "今日完成后：碎片 +1";
   const days = Array.isArray(voyage.days) ? voyage.days : [];
   const dots = Array.from({ length: 7 }, (_, index) => (days.includes(addDays(TODAY, index - 6)) ? "🟢" : "⚪")).join("");
   return { countText, nextText, keptToday, waiting, dots };
@@ -863,7 +909,7 @@ function diaryMoodClause() {
 }
 
 function makeGrowthDiaryLine(task) {
-  return `${dateLabel()}，八宝今天完成了${task.title}。${diaryMoodClause()}${taskSpecificDiary(task)}，航线保持成功。`;
+  return `${dateLabel()}，八宝今天完成了${task.title}。${diaryMoodClause()}${taskSpecificDiary(task)}，今天留下了一个小碎片。`;
 }
 
 function makeBattleRecord(task) {
@@ -877,7 +923,7 @@ function updateBattleReport(task, badge = null) {
   state.battleReports = state.battleReports || [];
   let report = state.battleReports.find((item) => item.date === TODAY);
   if (!report) {
-    report = { date: TODAY, status: "稳定航线", completed: [], badges: [], records: [] };
+    report = { date: TODAY, status: "今日小局", completed: [], badges: [], records: [] };
     state.battleReports.unshift(report);
   }
   if (!report.completed.includes(task.id)) report.completed.push(task.id);
@@ -924,7 +970,7 @@ function dabaiBuddyLines() {
     : ["今天先赢一个小回合就够。", "大白在这里，不催你。", "先开口，后面都好改。"];
   const suggestions = {
     "很好": ["先拿下数学，再去挑战英语。", "今天可以当一次小队长。"],
-    "还行": ["先做最短的一项，让航线亮起来。", "先拿一个小局，再看下一步。"],
+    "还行": ["先做最短的一项，让碎片亮起来。", "先拿一个小局，再看下一步。"],
     "有点累": ["先做小版本，大白陪你慢一点。", "只改一个点就很好。"],
     "不想学": ["先赢5分钟，不用解释太多。", "只开一个小口，大白就算你起航。"]
   }[state.weather || "还行"];
@@ -1062,7 +1108,7 @@ function renderPages(activeId = document.querySelector(".page.active")?.id || "h
 
 function renderPage(page) {
   if (page.kind === "home") return renderers.home();
-  return `<div class="card"><h2>${page.icon} ${page.title}</h2><p>${page.hint}</p></div>${renderers[page.kind]?.() || ""}`;
+  return `<div class="card"><h2>${page.icon} ${page.title}</h2><p>${page.hint}</p></div>${renderCompletionResult()}${renderers[page.kind]?.() || ""}`;
 }
 
 function taskDoneCount() {
@@ -1488,7 +1534,7 @@ function renderBattleReports() {
           const completed = (report.completed || []).map((id) => `${taskNameById(id)}√`).join("  ") || "正在起航";
           const badges = (report.badges || []).join("  ") || "今天的小回合";
           const records = (report.records || []).map((line) => `<div class="diaryLine">${escapeHtml(line)}</div>`).join("");
-          return `<div class="history battleReport"><b>${escapeHtml(report.date)}</b><br>状态：${escapeHtml(report.status || "稳定航线")}<br>完成：${escapeHtml(completed)}<br>获得：${escapeHtml(badges)}<br><br><b>大白记录：</b>${records}</div>`;
+          return `<div class="history battleReport"><b>${escapeHtml(report.date)}</b><br>状态：${escapeHtml(report.status || "今日小局")}<br>完成：${escapeHtml(completed)}<br>获得：${escapeHtml(badges)}<br><br><b>大白记录：</b>${records}</div>`;
         })
         .join("")
     : `<div class="history">今天完成任意一项后，大白会写一份很短的战报。</div>`;
@@ -1526,9 +1572,15 @@ function handleDoneClick(key) {
       state.exploration.englishTasks = (state.exploration.englishTasks || 0) + 1;
     }
     const badge = awardBadge(task);
-    awardPigFragment(task);
+    const reward = awardPigFragment(task);
     addGrowthDiary(task);
     updateBattleReport(task, badge);
+    setCompletionResult({
+      title: `${task.title}完成`,
+      message: "完成结果已经收好。",
+      reward,
+      feedback: buildTaskFeedback(task, state.dailyNotes?.[task.id] || {})
+    });
     save();
   }
 }
@@ -1558,6 +1610,7 @@ const renderers = {
           <p class="oneSentence">${escapeHtml(lines[1])}</p>
           ${renderNatureBadge()}
           ${renderPigRewardPanel()}
+          ${renderCompletionResult()}
           <h3 class="moduleQuestion">选一个房间</h3>
           ${renderModuleLaunchers()}
           <button class="universeLink" data-module="universe">📜 看看我的成长宇宙</button>
@@ -1712,6 +1765,21 @@ function bindAll() {
     };
   });
   document.querySelector("[data-sync-weather]")?.addEventListener("click", syncLocalWeather);
+  document.querySelectorAll("[data-pig-avatar]").forEach((button) => {
+    button.onclick = () => {
+      const rewards = ensurePigRewards();
+      const avatarId = button.dataset.pigAvatar;
+      if (!rewards.unlockedAvatars.includes(avatarId)) return;
+      rewards.activeAvatarId = avatarId;
+      setCompletionResult({
+        title: "头像已切换",
+        message: "大白换上新猪头了。",
+        feedback: pigAvatarCatalog.find((avatar) => avatar.id === avatarId)?.name || ""
+      });
+      save();
+      renderPages("home");
+    };
+  });
   document.querySelectorAll("[data-learning-subject]").forEach((button) => {
     button.onclick = () => {
       state.learningSubject = button.dataset.learningSubject || "math";
@@ -1753,13 +1821,19 @@ function bindAll() {
     state.growthUniverse = state.growthUniverse || {};
     state.growthUniverse.bodyLogs = [state.bodyLog, ...(state.growthUniverse.bodyLogs || []).filter((log) => log.date !== TODAY)].slice(0, 30);
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "body"])];
+    let reward = null;
     if (status === "tennis") {
       state.done.task_tennis = true;
-      awardPigFragment(taskByDoneKey("task_tennis"));
+      reward = awardPigFragment(taskByDoneKey("task_tennis"));
     }
+    setCompletionResult({
+      title: "身体记录完成",
+      message: completedActivity,
+      reward,
+      feedback: suggestion.reminder
+    });
     save();
     renderPages("home");
-    speak("收到。身体记录已经收进成长宇宙。");
   });
   document.querySelectorAll("[data-music-upload]").forEach((input) => {
     input.onchange = () => {
@@ -1824,13 +1898,19 @@ function bindAll() {
     state.growthUniverse.musicLogs = [log, ...(state.growthUniverse.musicLogs || []).filter((item) => item.id !== log.id)].slice(0, 30);
     state.dailyState = state.dailyState || {};
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "music"])];
+    let reward = null;
     if (state.done) {
       state.done.task_harmonica = true;
-      awardPigFragment(taskByDoneKey("task_harmonica"));
+      reward = awardPigFragment(taskByDoneKey("task_harmonica"));
     }
+    setCompletionResult({
+      title: "音乐小局完成",
+      message: log.feedback.praise,
+      reward,
+      feedback: log.feedback.onePoint
+    });
     save();
     renderPages("home");
-    speak(`${log.feedback.praise}${log.feedback.onePoint}`);
   });
   document.querySelector("[data-english-complete]")?.addEventListener("click", () => {
     const task = getDailyEnglishTask({ date: TODAY, energyMode: englishMode() });
@@ -1861,10 +1941,15 @@ function bindAll() {
     state.dailyState = state.dailyState || {};
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "english"])];
     state.done.task_english = true;
-    awardPigFragment(taskByDoneKey("task_english"));
+    const reward = awardPigFragment(taskByDoneKey("task_english"));
+    setCompletionResult({
+      title: "英语探索完成",
+      message: value,
+      reward,
+      feedback: feedback.text
+    });
     save();
     renderPages("home");
-    speak(feedback.text);
   });
   document.querySelectorAll("[data-done]").forEach((button) => {
     button.onclick = () => {
@@ -1966,10 +2051,15 @@ function bindAll() {
     state.dailyState.completedRooms = [...new Set([...(state.dailyState.completedRooms || []), "learning"])];
     const doneKey = subject === "chinese" ? "task_chinese" : subject === "englishSchool" ? "task_english" : "task_math";
     state.done[doneKey] = true;
-    awardPigFragment(taskByDoneKey(doneKey));
+    const reward = awardPigFragment(taskByDoneKey(doneKey));
+    setCompletionResult({
+      title: "学习小局完成",
+      message: task.title,
+      reward,
+      feedback: `${feedback.praise}${feedback.onePoint}`
+    });
     save();
     renderPages("home");
-    speak(`${feedback.praise}${feedback.onePoint}${feedback.example ? `例：${feedback.example}` : ""}`);
   });
   document.querySelectorAll("[data-voice-target]").forEach((button) => {
     button.onclick = () => startVoiceToField(button.dataset.voiceTarget, button);
@@ -2076,77 +2166,155 @@ async function sendCompanionMessage(messageOverride = "") {
 }
 
 function startCompanionVoiceInput() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const input = document.getElementById("companionInput");
-  const status = document.getElementById("companionStatus");
-  if (!SpeechRecognition || !input) {
-    alert("这个浏览器暂时不支持语音识别，可以换 Chrome/Safari，或者先用文字。");
-    return;
-  }
-  if (recognition) recognition.stop();
-  recognition = new SpeechRecognition();
-  recognition.lang = "zh-CN";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  if (status) status.textContent = "大白在听，说完停一下就会自动回答。";
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    input.value = transcript;
-    if (status) status.textContent = `听到了：${transcript}`;
-    sendCompanionMessage(transcript);
-  };
-  recognition.onerror = () => {
-    if (status) status.textContent = "刚才没听清，可以再点一次开始说话。";
-  };
-  recognition.onend = () => {
-    if (status && !input.value) status.textContent = "点“开始说话”，说完后大白会自动回答。";
-  };
-  recognition.start();
+  startVoiceToField("companionInput", document.getElementById("voiceCompanion"), {
+    statusElement: document.getElementById("companionStatus"),
+    afterText: (text) => sendCompanionMessage(text)
+  });
 }
 
-function startVoiceToField(targetId, button) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const input = document.getElementById(targetId);
-  if (!SpeechRecognition || !input) {
-    alert("这个浏览器暂时不支持语音识别，可以换 Chrome/Safari，或者先用文字。");
+function voiceStatusElement(input, button, explicitStatus) {
+  if (explicitStatus) return explicitStatus;
+  const id = input.id || `voice-${Date.now()}`;
+  if (!input.id) input.id = id;
+  const parent = button?.closest(".fieldWithVoice") || input.parentElement;
+  let status = parent?.parentElement?.querySelector(`[data-voice-status-for="${id}"]`);
+  if (!status && parent?.parentElement) {
+    status = document.createElement("div");
+    status.className = "voiceStatus";
+    status.dataset.voiceStatusFor = id;
+    parent.insertAdjacentElement("afterend", status);
+  }
+  return status;
+}
+
+function setVoiceStatus(status, text) {
+  if (status) status.textContent = text;
+}
+
+async function requestMicrophone(status) {
+  if (!navigator.mediaDevices?.getUserMedia) return null;
+  setVoiceStatus(status, "正在请求麦克风权限...");
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  stream.getTracks().forEach((track) => track.stop());
+  return true;
+}
+
+function appendTranscript(input, transcript) {
+  input.value = `${input.value.trim()}${input.value.trim() ? "\n" : ""}${transcript}`;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+async function recordAndTranscribe(input, button, status, afterText) {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    setVoiceStatus(status, "这个浏览器不支持语音转文字。建议用 Chrome/Safari 打开，或先用文字。");
     return;
   }
-  if (recognition) recognition.stop();
-  recognition = new SpeechRecognition();
-  recognition.lang = "zh-CN";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
   const originalText = button?.textContent || "🎙 说";
-  if (button) {
-    button.textContent = "听...";
-    button.classList.add("active");
-  }
-  input.focus();
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.trim();
-    input.value = `${input.value.trim()}${input.value.trim() ? "\n" : ""}${transcript}`;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  };
-  recognition.onerror = () => {
-    if (button) button.textContent = "再说";
-  };
-  recognition.onend = () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
+    recorder.ondataavailable = (event) => {
+      if (event.data?.size) chunks.push(event.data);
+    };
+    const finished = new Promise((resolve) => {
+      recorder.onstop = resolve;
+    });
+    if (button) {
+      button.textContent = "录音中";
+      button.classList.add("active");
+    }
+    setVoiceStatus(status, "正在听，5秒后自动转成文字。");
+    recorder.start();
+    setTimeout(() => {
+      if (recorder.state === "recording") recorder.stop();
+    }, 5000);
+    await finished;
+    stream.getTracks().forEach((track) => track.stop());
+    setVoiceStatus(status, "正在转成文字...");
+    const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+    const response = await fetch("/api/transcribe", {
+      method: "POST",
+      headers: { "Content-Type": blob.type || "audio/webm" },
+      body: blob
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "语音转文字失败");
+    const transcript = String(data.text || "").trim();
+    if (!transcript) {
+      setVoiceStatus(status, "没有听到清楚文字，可以再说一次。");
+      return;
+    }
+    appendTranscript(input, transcript);
+    setVoiceStatus(status, `听到了：${transcript}`);
+    afterText?.(transcript);
+  } catch (error) {
+    setVoiceStatus(status, error.message || "语音输入没成功。可以检查麦克风权限，或先用文字。");
+  } finally {
     if (button) {
       button.textContent = originalText;
       button.classList.remove("active");
     }
-  };
-  recognition.start();
+  }
+}
+
+async function startVoiceToField(targetId, button, options = {}) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const input = document.getElementById(targetId);
+  if (!input) {
+    return;
+  }
+  const status = voiceStatusElement(input, button, options.statusElement);
+  if (!SpeechRecognition) {
+    await recordAndTranscribe(input, button, status, options.afterText);
+    return;
+  }
+  if (recognition) recognition.stop();
+  const originalText = button?.textContent || "🎙 说";
+  try {
+    await requestMicrophone(status);
+    recognition = new SpeechRecognition();
+    recognition.lang = "zh-CN";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    if (button) {
+      button.textContent = "听...";
+      button.classList.add("active");
+    }
+    setVoiceStatus(status, "大白在听，说完停一下。");
+    input.focus();
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.trim();
+      appendTranscript(input, transcript);
+      setVoiceStatus(status, `听到了：${transcript}`);
+      options.afterText?.(transcript);
+    };
+    recognition.onerror = (event) => {
+      setVoiceStatus(status, event.error === "not-allowed" ? "麦克风权限没有打开。请允许麦克风，或先用文字。" : "刚才没听清，可以再点一次。");
+    };
+    recognition.onend = () => {
+      if (button) {
+        button.textContent = originalText;
+        button.classList.remove("active");
+      }
+    };
+    recognition.start();
+  } catch {
+    setVoiceStatus(status, "麦克风权限没有打开。请允许麦克风，或先用文字。");
+    if (button) {
+      button.textContent = originalText;
+      button.classList.remove("active");
+    }
+  }
 }
 
 function renderProgress() {
   const count = taskDoneCount();
   const total = requiredTasks().length || 1;
   const percent = Math.min(100, Math.round((count / total) * 100));
-  const voyage = voyageState();
   progressNum.textContent = `${onlineDayCount()}天`;
   bar.style.width = `${percent}%`;
-  progressText.textContent = `${voyage.countText} · ${voyage.nextText}`;
+  progressText.textContent = `今日完成 ${count}/${total} · 猪头碎片 ${(state.pigRewards?.todayFragments || []).length} 块`;
 }
 
 function pageText() {

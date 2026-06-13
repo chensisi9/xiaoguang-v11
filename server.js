@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import OpenAI from "openai";
+import { toFile } from "openai/uploads";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -17,6 +18,27 @@ const ollamaModel = process.env.OLLAMA_MODEL || "qwen2.5:7b";
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.join(__dirname, "public")));
+
+app.post("/api/transcribe", express.raw({ type: ["audio/webm", "audio/mp4", "audio/mpeg", "audio/wav"], limit: "12mb" }), async (req, res) => {
+  try {
+    if (!openai) {
+      return res.status(503).json({ error: "后端没有配置 OPENAI_API_KEY，当前浏览器又不支持本地语音识别。可以换 Chrome/Safari，或先用文字输入。" });
+    }
+    if (!req.body?.length) return res.status(400).json({ error: "没有收到录音。" });
+    const contentType = String(req.headers["content-type"] || "audio/webm").split(";")[0];
+    const extension = contentType.includes("wav") ? "wav" : contentType.includes("mpeg") ? "mp3" : contentType.includes("mp4") ? "mp4" : "webm";
+    const file = await toFile(req.body, `dabai-voice.${extension}`, { type: contentType });
+    const transcript = await openai.audio.transcriptions.create({
+      file,
+      model: process.env.TRANSCRIBE_MODEL || "gpt-4o-mini-transcribe",
+      language: "zh"
+    });
+    res.json({ ok: true, text: transcript.text || "" });
+  } catch (error) {
+    console.error("Transcribe error:", error);
+    res.status(500).json({ error: "语音转文字暂时没成功。可以检查 OpenAI 额度，或先用文字输入。" });
+  }
+});
 
 const allowedVoices = new Set(["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse", "marin", "cedar"]);
 const allowedModels = new Set(["gpt-4o-mini-tts", "tts-1", "tts-1-hd"]);

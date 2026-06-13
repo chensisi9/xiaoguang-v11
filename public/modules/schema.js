@@ -680,6 +680,7 @@ export function createInitialState() {
       label: "",
       syncedAt: ""
     },
+    completionResult: null,
     exploration: {
       englishTasks: 0
     },

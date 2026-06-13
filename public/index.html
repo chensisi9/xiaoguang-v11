@@ -219,6 +219,17 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;background-image:linear
 .pigRewardPanel span{color:#ffcf7a;letter-spacing:3px;font-size:18px}
 .pigRewardPanel small{display:block;margin-top:5px;color:#d8f6ff;line-height:1.35}
 .pigRewardPanel .pigUnlocked{color:#ffcf7a;font-weight:900}
+.avatarPicker{margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,207,122,.22)}
+.avatarPicker b{display:block;margin-bottom:7px;color:#fff}
+.avatarPicker div{display:flex;justify-content:flex-start;gap:7px;flex-wrap:wrap}
+.avatarPicker button{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,207,122,.28);background:rgba(255,255,255,.06);cursor:pointer;font-size:18px}
+.avatarPicker button.active{background:rgba(255,207,122,.22);box-shadow:0 0 0 2px rgba(255,207,122,.25)}
+.avatarPicker button:disabled{opacity:.45;cursor:not-allowed}
+.completionResult{margin:12px auto 0;max-width:440px;padding:12px;border-radius:10px;background:rgba(103,232,249,.1);border:1px solid rgba(103,232,249,.28);text-align:left;color:#d7fbff}
+.completionResult b,.completionResult span,.completionResult small{display:block}
+.completionResult b{color:#fff;margin-bottom:5px}
+.completionResult small{margin-top:5px;color:#d8f6ff;line-height:1.4}
+.voiceStatus{margin:0 0 8px;color:#ffcf7a;font-size:12px;line-height:1.4}
 .roomTop{grid-template-columns:auto auto minmax(0,1fr)}
 .dabaiBuddy h3{display:flex;align-items:center;gap:4px}
 </style>
@@ -240,6 +251,6 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;background-image:linear
 <main id="pages"></main>
 <footer class="footer"><div>今天陪大白赢下一小局。</div><button class="secondary" id="exportBtn">导出今日记录</button></footer>
 </div>
-<script type="module" src="./app.js?v=20260613-pig-nature-1"></script>
+<script type="module" src="./app.js?v=20260613-voice-reward-1"></script>
 </body>
 </html>

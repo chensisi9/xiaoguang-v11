@@ -1,4 +1,4 @@
-import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260613-pig-nature-1";
+import { TODAY, createInitialState, defaultTasks, progressKeys } from "./schema.js?v=20260613-voice-reward-1";
 
 export const storeKey = "dabai_state";
 export const historyKey = "dabai_history";
@@ -24,6 +24,7 @@ function normalizeState(raw) {
       badges: raw.badges || { earned: [], today: [] },
       pigRewards: raw.pigRewards || createInitialState().pigRewards,
       localWeather: raw.localWeather || createInitialState().localWeather,
+      completionResult: raw.completionResult?.date === TODAY ? raw.completionResult : null,
       exploration: raw.exploration || { englishTasks: 0 },
       profile: raw.profile || createInitialState().profile,
       userProfile: raw.userProfile || createInitialState().userProfile,
@@ -73,6 +74,7 @@ function normalizeState(raw) {
     badges: raw.badges || { earned: [], today: [] },
     pigRewards: raw.pigRewards || createInitialState().pigRewards,
     localWeather: raw.localWeather || createInitialState().localWeather,
+    completionResult: raw.completionResult?.date === TODAY ? raw.completionResult : null,
     exploration: raw.exploration || { englishTasks: 0 },
     feedbackBubble: raw.feedbackBubble || null,
     profile: raw.profile || createInitialState().profile,
@@ -189,6 +191,7 @@ export function snapshotToday() {
     badges: state.badges,
     pigRewards: state.pigRewards,
     localWeather: state.localWeather,
+    completionResult: state.completionResult,
     exploration: state.exploration,
     userProfile: state.userProfile,
     dailyState: state.dailyState,

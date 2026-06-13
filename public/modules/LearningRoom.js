@@ -1,5 +1,5 @@
-import { allLessons } from "./curriculumData.js?v=20260613-pig-nature-1";
-import { generateDailyLearningTask } from "./curriculumEngine.js?v=20260613-pig-nature-1";
+import { allLessons } from "./curriculumData.js?v=20260613-voice-reward-1";
+import { generateDailyLearningTask } from "./curriculumEngine.js?v=20260613-voice-reward-1";
 
 const subjectOptions = [
   ["math", "数学"],
