@@ -232,7 +232,11 @@ app.post("/api/tts", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`大白 学习操作系统已启动：http://localhost:${port}`);
-  console.log(hasKey ? "高级 TTS：已配置" : "高级 TTS：未配置 OPENAI_API_KEY，将使用浏览器本地语音兜底");
-});
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`大白 学习操作系统已启动：http://localhost:${port}`);
+    console.log(hasKey ? "高级 TTS：已配置" : "高级 TTS：未配置 OPENAI_API_KEY，将使用浏览器本地语音兜底");
+  });
+}
+
+export default app;
